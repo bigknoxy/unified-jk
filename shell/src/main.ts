@@ -22,7 +22,7 @@ const defaultConfig: ShellConfig = {
     borderRadius: '6px'
   },
   authProvider: 'oidc',
-  auditEndpoint: '/api/audit',
+  auditEndpoint: '/api/audit/batch',
   apiBaseUrl: '/api',
   maxIframes: 3,
   iframeTimeout: 30000

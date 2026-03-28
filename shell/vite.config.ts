@@ -24,8 +24,13 @@ export default defineConfig({
   server: {
     port: 8888,
     proxy: {
-      '/api': {
+      '/api/audit': {
         target: 'http://localhost:8080',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/audit/, '/api')
+      },
+      '/api/manifests': {
+        target: 'http://localhost:8081',
         changeOrigin: true
       }
     }
