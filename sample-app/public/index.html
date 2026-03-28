@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sample App - Shell Platform Demo</title>
+
+    <!-- Shell Client SDK from CDN -->
+    <script src="http://localhost:8887/sdk/v1/shell-client.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--shell-font-family, Inter, sans-serif);
+        background: var(--shell-bg-primary, #ffffff);
+        color: var(--shell-text-primary, #1a1a1a);
+        padding: 24px;
+        line-height: 1.5;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: var(--shell-primary, #0066cc);
+        margin-bottom: 8px;
+      }
+
+      .subtitle {
+        color: var(--shell-text-secondary, #6b7280);
+        margin-bottom: 24px;
+      }
+
+      .card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .card h2 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: var(--shell-text-primary, #1a1a1a);
+      }
+
+      .row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      button {
+        padding: 10px 16px;
+        background: var(--shell-primary, #0066cc);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: opacity 0.15s;
+      }
+
+      button:hover {
+        opacity: 0.9;
+      }
+
+      button.secondary {
+        background: var(--shell-bg-secondary, #f3f4f6);
+        color: var(--shell-text-primary, #1a1a1a);
+      }
+
+      .status {
+        margin-top: 12px;
+        padding: 12px;
+        background: #e6f0fa;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        white-space: pre-wrap;
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--shell-primary, #0066cc);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 600;
+      }
+
+      .user-details h3 {
+        font-size: 16px;
+        margin: 0;
+      }
+
+      .user-details p {
+        font-size: 14px;
+        color: var(--shell-text-secondary, #6b7280);
+        margin: 4px 0 0;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 4px 8px;
+        background: #e6f0fa;
+        color: var(--shell-primary, #0066cc);
+        border-radius: 4px;
+        font-size: 12px;
+        margin-right: 4px;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+
+      input[type="text"] {
+        flex: 1;
+        padding: 10px 12px;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+
+      .standalone-notice {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        color: #92400e;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Sample App</h1>
+      <p class="subtitle">Demonstrates Shell Platform SDK integration</p>
+
+      <div id="standalone-notice" class="standalone-notice" style="display: none">
+        <strong>Standalone Mode</strong>: Running outside shell. SDK features
+        unavailable.
+      </div>
+
+      <div class="card">
+        <h2>User Session</h2>
+        <div id="user-section">
+          <p>Loading user info...</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Audit Logging</h2>
+        <p>Send audit events to the shell platform:</p>
+        <div class="row">
+          <button onclick="logCreateEvent()">Log "Create Document"</button>
+          <button onclick="logUpdateEvent()">Log "Update Record"</button>
+          <button onclick="logDeleteEvent()" class="secondary">Log "Delete Item"</button>
+        </div>
+        <div id="audit-status" class="status" style="display: none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Shared State</h2>
+        <p>Persist data across app switches:</p>
+        <div class="input-group">
+          <input type="text" id="state-key" placeholder="Key (e.g., 'draft')" />
+          <input type="text" id="state-value" placeholder="Value" />
+          <button onclick="setSharedState()">Save</button>
+        </div>
+        <button class="secondary" onclick="getSharedState()">Load Saved Value</button>
+        <div id="state-status" class="status" style="display: none"></div>
+      </div>
+
+      <div class="card">
+        <h2>Navigation</h2>
+        <p>Request shell to navigate to another app:</p>
+        <div class="row">
+          <button onclick="navigateTo('documents')">Go to Documents</button>
+          <button onclick="navigateTo('settings')">Go to Settings</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Theme</h2>
+        <p>Theme is automatically applied via CSS custom properties:</p>
+        <div class="status">
+--shell-primary: <span id="theme-primary">#0066cc</span>
+--shell-text-primary: <span id="theme-text">#1a1a1a</span>
+--shell-bg-primary: <span id="theme-bg">#ffffff</span>
+        </div>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

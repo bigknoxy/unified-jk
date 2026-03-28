@@ -1,0 +1,23 @@
+{
+  "name": "@shell-platform/monorepo",
+  "version": "1.0.0",
+  "description": "Modular App Shell Platform - iframe-based micro-frontend orchestration",
+  "type": "module",
+  "scripts": {
+    "start": "node start-all.mjs",
+    "dev": "node start-all.mjs",
+    "install:all": "npm install && npm run install:sdk && npm run install:shell && npm run install:audit && npm run install:registry",
+    "install:sdk": "echo 'SDK has no dependencies'",
+    "install:shell": "cd shell && npm install",
+    "install:audit": "cd audit-service && npm install",
+    "install:registry": "cd manifest-registry && npm install"
+  },
+  "devDependencies": {
+    "tsx": "^4.6.2"
+  },
+  "workspaces": [
+    "shell",
+    "audit-service",
+    "manifest-registry"
+  ]
+}
