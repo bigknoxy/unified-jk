@@ -264,7 +264,7 @@ export class ShellContainer extends LitElement {
     await this.initializeServices();
 
     // Listen for demo login event
-    window.addEventListener('shell:show-demo-login', this.handleShowDemoLogin.bind(this));
+    window.addEventListener('shell:show-demo-login', this.handleShowDemoLogin);
   }
 
   firstUpdated(): void {
@@ -275,10 +275,10 @@ export class ShellContainer extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
     this.cleanup();
-    window.removeEventListener('shell:show-demo-login', this.handleShowDemoLogin.bind(this));
+    window.removeEventListener('shell:show-demo-login', this.handleShowDemoLogin);
   }
 
-  private handleShowDemoLogin(): void {
+  private handleShowDemoLogin = (): void => {
     if (this.config.authProvider === 'demo') {
       this.showDemoLogin = true;
     }
