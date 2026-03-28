@@ -170,6 +170,13 @@ export class ShellHeader extends LitElement {
     this.closeMenu();
   }
 
+  // Document click handler - defined as property so it can be removed
+  private handleDocumentClick = (e: MouseEvent): void => {
+    if (!this.contains(e.target as Node)) {
+      this.closeMenu();
+    }
+  };
+
   render() {
     return html`
       <header class="header">
@@ -186,7 +193,7 @@ export class ShellHeader extends LitElement {
           ${this.user
             ? html`
                 <div class="user-menu">
-                  <button class="user-button" @click="${this.toggleMenu}">
+                  <button class="user-button" @click="${(e: Event) => { e.stopPropagation(); this.toggleMenu(); }}">
                     <span class="avatar">${this.getInitials(this.user.name)}</span>
                     <span>${this.user.name}</span>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
@@ -227,11 +234,13 @@ export class ShellHeader extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     // Close menu when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!this.contains(e.target as Node)) {
-        this.closeMenu();
-      }
-    });
+    document.addEventListener('click', this.handleDocumentClick);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    // Clean up document click listener
+    document.removeEventListener('click', this.handleDocumentClick);
   }
 }
 
