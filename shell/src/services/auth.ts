@@ -3,7 +3,8 @@
  * Handles token management, refresh, and user session
  */
 
-import type { User, DEMO_USERS } from '../types';
+import type { User } from '../types';
+import { DEMO_USERS } from '../types';
 
 interface AuthConfig {
   provider: 'oidc' | 'saml' | 'custom' | 'demo';
