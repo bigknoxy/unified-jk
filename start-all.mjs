@@ -4,10 +4,69 @@
  * Single command to start SDK, Shell, Sample App, Audit Service, and Manifest Registry
  */
 
-import { spawn } from 'child_process';
+import { spawn, execSync } from 'child_process';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { mkdirSync } from 'fs';
+
+// Ports used by services
+const SERVICE_PORTS = [8888, 8887, 8886, 8080, 8081];
+
+function killProcessesOnPorts() {
+  console.log('Checking for existing processes on service ports...');
+  for (const port of SERVICE_PORTS) {
+    try {
+      // Try to find and kill processes on this port
+      // Linux: use fuser or lsof
+      const platform = process.platform;
+      if (platform === 'linux' || platform === 'darwin') {
+        try {
+          // Use lsof to find PID and kill it
+          const output = execSync(`lsof -ti:${port}`).toString().trim();
+          if (output) {
+            const pids = output.split('\n');
+            for (const pid of pids) {
+              if (pid) {
+                console.log(`Killing process ${pid} on port ${port}`);
+                try {
+                  process.kill(parseInt(pid), 'SIGTERM');
+                } catch (e) {
+                  // Process might already be dead
+                }
+              }
+            }
+          }
+        } catch (e) {
+          // No process found on this port, which is fine
+        }
+      } else if (platform === 'win32') {
+        try {
+          const output = execSync(`netstat -ano | findstr :${port}`).toString();
+          const lines = output.split('\n');
+          for (const line of lines) {
+            const parts = line.trim().split(/\s+/);
+            const pid = parts[parts.length - 1];
+            if (pid && !isNaN(parseInt(pid))) {
+              console.log(`Killing process ${pid} on port ${port}`);
+              try {
+                execSync(`taskkill /PID ${pid} /F`);
+              } catch (e) {
+                // Process might already be dead
+              }
+            }
+          }
+        } catch (e) {
+          // No process found on this port
+        }
+      }
+    } catch (e) {
+      // Ignore errors from port checking
+    }
+  }
+  // Give processes time to shut down
+  console.log('Waiting for ports to be released...');
+  execSync('sleep 1');
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -111,6 +170,9 @@ process.on('exit', () => shutdown('SIGTERM'));
 console.log(`${colors.info}========================================${colors.reset}`);
 console.log(`${colors.info}  Shell Platform - Starting Services${colors.reset}`);
 console.log(`${colors.info}========================================${colors.reset}\n`);
+
+// Kill any existing processes on service ports
+killProcessesOnPorts();
 
 // Ensure logs directory exists for audit service
 try {
