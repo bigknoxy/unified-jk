@@ -99,12 +99,44 @@ export interface NavItem {
   children?: NavItem[];
 }
 
+// Demo Users for Development
+export const DEMO_USERS: User[] = [
+  {
+    id: 'alice-admin',
+    email: 'alice@example.com',
+    name: 'Alice (Admin)',
+    permissions: ['app:read', 'app:write', 'admin:read', 'admin:write', 'documents:read', 'documents:write'],
+    roles: ['admin']
+  },
+  {
+    id: 'bob-user',
+    email: 'bob@example.com',
+    name: 'Bob (Standard User)',
+    permissions: ['app:read', 'documents:read', 'documents:write'],
+    roles: ['user']
+  },
+  {
+    id: 'carol-viewer',
+    email: 'carol@example.com',
+    name: 'Carol (Viewer)',
+    permissions: ['app:read', 'documents:read'],
+    roles: ['viewer']
+  },
+  {
+    id: 'dave-developer',
+    email: 'dave@example.com',
+    name: 'Dave (Developer)',
+    permissions: ['app:read', 'app:write', 'analytics:read'],
+    roles: ['developer']
+  }
+];
+
 // Shell Configuration
 export interface ShellConfig {
   title: string;
   logo?: string;
   theme: Theme;
-  authProvider: 'oidc' | 'saml' | 'custom';
+  authProvider: 'oidc' | 'saml' | 'custom' | 'demo';
   auditEndpoint: string;
   apiBaseUrl: string;
   maxIframes: number;

@@ -21,7 +21,7 @@ const defaultConfig: ShellConfig = {
     error: '#ef4444',
     borderRadius: '6px'
   },
-  authProvider: 'oidc',
+  authProvider: 'demo',
   auditEndpoint: '/api/audit/batch',
   apiBaseUrl: '/api',
   maxIframes: 3,

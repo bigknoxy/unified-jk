@@ -23,17 +23,6 @@ const demoManifests: AppManifest[] = [
     version: '1.0.0'
   },
   {
-    id: 'dashboard',
-    name: 'Dashboard',
-    description: 'Overview and analytics',
-    url: 'http://localhost:3002',
-    icon: 'chart',
-    permissions: ['app:read', 'analytics:read'],
-    category: 'Core',
-    order: 2,
-    version: '1.0.0'
-  },
-  {
     id: 'documents',
     name: 'Documents',
     description: 'Document management',
@@ -41,7 +30,40 @@ const demoManifests: AppManifest[] = [
     icon: 'file',
     permissions: ['documents:read'],
     category: 'Core',
+    order: 2,
+    version: '1.0.0'
+  },
+  {
+    id: 'analytics',
+    name: 'Analytics',
+    description: 'Data analytics and reporting',
+    url: 'http://localhost:3002',
+    icon: 'chart',
+    permissions: ['analytics:read'],
+    category: 'Core',
     order: 3,
+    version: '1.0.0'
+  },
+  {
+    id: 'admin-panel',
+    name: 'Admin Panel',
+    description: 'System administration',
+    url: 'http://localhost:3004',
+    icon: 'settings',
+    permissions: ['admin:read'],
+    category: 'Admin',
+    order: 4,
+    version: '1.0.0'
+  },
+  {
+    id: 'api-explorer',
+    name: 'API Explorer',
+    description: 'Developer tools for API exploration',
+    url: 'http://localhost:3005',
+    icon: 'code',
+    permissions: ['app:read', 'app:write'],
+    category: 'Developer',
+    order: 5,
     version: '1.0.0'
   }
 ];

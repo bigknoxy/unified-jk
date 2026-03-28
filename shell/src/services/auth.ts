@@ -3,10 +3,10 @@
  * Handles token management, refresh, and user session
  */
 
-import type { User } from '../types';
+import type { User, DEMO_USERS } from '../types';
 
 interface AuthConfig {
-  provider: 'oidc' | 'saml' | 'custom';
+  provider: 'oidc' | 'saml' | 'custom' | 'demo';
   authority?: string;
   clientId?: string;
   redirectUri?: string;
@@ -62,6 +62,13 @@ export class AuthService {
   }
 
   async login(): Promise<void> {
+    // Demo mode - show user picker
+    if (this.config.provider === 'demo') {
+      console.warn('[DEMO MODE] Using mock authentication');
+      window.dispatchEvent(new CustomEvent('shell:show-demo-login'));
+      return;
+    }
+
     // Redirect to identity provider
     if (this.config.provider === 'oidc') {
       const state = this.generateState();
@@ -77,6 +84,28 @@ export class AuthService {
 
       window.location.href = `${this.config.authority}/authorize?${params}`;
     }
+  }
+
+  async setDemoUser(userId: string): Promise<User> {
+    if (this.config.provider !== 'demo') {
+      throw new Error('Demo user can only be set in demo mode');
+    }
+
+    const demoUser = DEMO_USERS.find(u => u.id === userId);
+    if (!demoUser) {
+      throw new Error(`Demo user not found: ${userId}`);
+    }
+
+    // Create mock tokens
+    this.user = demoUser;
+    this.accessToken = `demo-token-${userId}`;
+    this.refreshToken = `demo-refresh-${userId}`;
+    this.expiresAt = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+
+    this.saveSession();
+
+    console.log('[DEMO MODE] Logged in as:', demoUser.name);
+    return demoUser;
   }
 
   async handleCallback(code: string, state: string): Promise<User> {
