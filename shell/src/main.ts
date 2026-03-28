@@ -33,7 +33,9 @@ async function fetchApps(): Promise<AppManifest[]> {
   try {
     const response = await fetch('/api/manifests');
     if (!response.ok) throw new Error('Failed to fetch manifests');
-    return await response.json();
+    const data = await response.json();
+    // API returns { manifests: [...], total: N }
+    return data.manifests || [];
   } catch (error) {
     console.error('[Shell] Failed to load app manifests:', error);
     // Return empty array or demo apps for development
