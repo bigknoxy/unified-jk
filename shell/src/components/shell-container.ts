@@ -346,21 +346,21 @@ export class ShellContainer extends LitElement {
   }
 
   private initializeIframeManager(): void {
-    if (!this.auditService) return;
+    if (this.iframeManager) return; // Already initialized
 
     const iframeContainer = this.shadowRoot?.querySelector('.iframe-container');
-    if (iframeContainer) {
-      this.iframeManager = new IframeManager({
-        maxIframes: this.config.maxIframes,
-        container: iframeContainer as HTMLElement,
-        onAppActivate: (appId) => {
-          this.auditService?.log('APP_ACTIVATED', { appId });
-        },
-        onAppDeactivate: (appId) => {
-          this.auditService?.log('APP_DEACTIVATED', { appId });
-        }
-      });
-    }
+    if (!iframeContainer) return;
+
+    this.iframeManager = new IframeManager({
+      maxIframes: this.config.maxIframes,
+      container: iframeContainer as HTMLElement,
+      onAppActivate: (appId) => {
+        this.auditService?.log('APP_ACTIVATED', { appId });
+      },
+      onAppDeactivate: (appId) => {
+        this.auditService?.log('APP_DEACTIVATED', { appId });
+      }
+    });
   }
 
   private cleanup(): void {
