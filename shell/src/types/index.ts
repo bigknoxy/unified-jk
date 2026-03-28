@@ -119,7 +119,7 @@ export const DEMO_USERS: User[] = [
     id: 'carol-viewer',
     email: 'carol@example.com',
     name: 'Carol (Viewer)',
-    permissions: ['app:read', 'documents:read'],
+    permissions: ['documents:read'],  // No app:read - should see no apps
     roles: ['viewer']
   },
   {
