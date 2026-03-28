@@ -27,6 +27,17 @@ export class IframeManager {
   }
 
   async mountApp(manifest: AppManifest): Promise<void> {
+    // Validate URL before creating iframe
+    try {
+      const url = new URL(manifest.url);
+      if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+        throw new Error(`Invalid protocol: ${url.protocol}`);
+      }
+    } catch (error) {
+      console.error('[IframeManager] Invalid URL:', manifest.url);
+      throw new Error(`Cannot mount app with invalid URL: ${manifest.url}`);
+    }
+
     // Check if already cached
     let state = this.cache.get(manifest.id);
 
