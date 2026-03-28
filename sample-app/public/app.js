@@ -12,6 +12,7 @@ async function init() {
   try {
     await ShellClient.init({
       appId: 'sample-app',
+      shellOrigin: 'http://localhost:8888',
       onThemeUpdate: (theme) => {
         console.log('[SampleApp] Theme updated:', theme);
         updateThemeDisplay(theme);
