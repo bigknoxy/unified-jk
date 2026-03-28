@@ -114,7 +114,7 @@ const services = [
   {
     name: 'Sample App',
     short: 'SAMPLE',
-    dir: 'sample-app',
+    dir: 'sample-app/public',
     cmd: 'sh',
     args: ['-c', 'echo "[SAMPLE] Starting on http://localhost:8886" && python3 -m http.server 8886'],
     color: colors.sample,
