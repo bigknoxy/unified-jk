@@ -26,8 +26,7 @@ export default defineConfig({
     proxy: {
       '/api/audit': {
         target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/audit/, '/api')
+        changeOrigin: true
       },
       '/api/manifests': {
         target: 'http://localhost:8081',

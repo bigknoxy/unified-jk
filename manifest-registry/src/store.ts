@@ -10,12 +10,14 @@ import type { AppManifest } from './types.js';
 const manifests = new Map<string, AppManifest>();
 
 // Seed with demo data
+// NOTE: Only Sample App is actually running (port 8886)
+// Other apps would need to be implemented and started on their respective ports
 const demoManifests: AppManifest[] = [
   {
     id: 'sample-app',
     name: 'Sample App',
     description: 'Demo application showing SDK integration',
-    url: 'http://localhost:8886',
+    url: 'http://localhost:8886/index.html',
     icon: 'grid',
     permissions: ['app:read'],
     category: 'Demo',
@@ -23,48 +25,15 @@ const demoManifests: AppManifest[] = [
     version: '1.0.0'
   },
   {
-    id: 'documents',
-    name: 'Documents',
-    description: 'Document management',
-    url: 'http://localhost:3003',
-    icon: 'file',
-    permissions: ['documents:read'],
-    category: 'Core',
-    order: 2,
-    version: '1.0.0'
-  },
-  {
-    id: 'analytics',
-    name: 'Analytics',
-    description: 'Data analytics and reporting',
-    url: 'http://localhost:3002',
-    icon: 'chart',
-    permissions: ['analytics:read'],
-    category: 'Core',
-    order: 3,
-    version: '1.0.0'
-  },
-  {
-    id: 'admin-panel',
-    name: 'Admin Panel',
-    description: 'System administration',
-    url: 'http://localhost:3004',
-    icon: 'settings',
-    permissions: ['admin:read'],
-    category: 'Admin',
-    order: 4,
-    version: '1.0.0'
-  },
-  {
     id: 'api-explorer',
     name: 'API Explorer',
-    description: 'Developer tools for API exploration',
-    url: 'http://localhost:3005',
+    description: 'Developer tools for API exploration (Placeholder - not implemented)',
+    url: 'http://localhost:8886/index.html?app=api-explorer',
     icon: 'code',
     permissions: ['app:read', 'app:write'],
     category: 'Developer',
-    order: 5,
-    version: '1.0.0'
+    order: 2,
+    version: '0.1.0'
   }
 ];
 
