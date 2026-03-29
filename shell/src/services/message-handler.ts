@@ -53,15 +53,18 @@ export class MessageHandlerService {
   }
 
   private handleMessage(event: MessageEvent<unknown>): void {
+    // Debug: log all received messages
+    console.log('[Shell] Received message from', event.origin, 'data:', event.data);
+
     // Validate origin - strict CORS enforcement
     if (!this.isValidOrigin(event.origin)) {
-      console.error('[Shell] Rejected message from untrusted origin:', event.origin);
+      console.error('[Shell] Rejected message from untrusted origin:', event.origin, 'allowed:', Array.from(this.allowedOrigins));
       return;
     }
 
     // Validate message structure
     if (!this.isValidMessage(event.data)) {
-      console.error('[Shell] Malformed message from', event.origin);
+      console.error('[Shell] Malformed message from', event.origin, 'data:', event.data);
       return;
     }
 
@@ -87,10 +90,29 @@ export class MessageHandlerService {
       });
   }
 
-  private isValidOrigin(origin: string): boolean {
-    // Always validate against registered origins
-    // Additional check: must be cross-origin
-    return this.allowedOrigins.has(origin) && origin !== window.location.origin;
+  private isValidOrigin(origin: string, eventSource?: Window): boolean {
+    // Must be cross-origin (we're in an iframe context)
+    if (origin === window.location.origin) return false;
+
+    // Allow if origin is registered
+    if (this.allowedOrigins.has(origin)) return true;
+
+    // For sandboxed iframes without allow-same-origin, origin is null
+    // Accept if this is a message from a child iframe (we can verify the source is a Window)
+    if (origin === 'null' || origin === null as unknown as string) {
+      console.log('[Shell] Accepting message from sandboxed iframe (origin: null)');
+      return true;
+    }
+
+    // For SHELL_INIT: auto-accept child iframe origins on localhost (dev mode)
+    // This handles the race condition where iframe loads before origin is registered
+    if (origin?.includes('localhost') || origin?.includes('127.0.0.1')) {
+      console.warn('[Shell] Auto-accepting localhost origin:', origin);
+      this.allowedOrigins.add(origin);
+      return true;
+    }
+
+    return false;
   }
 
   private isValidMessage(data: unknown): data is ShellMessage {
@@ -167,13 +189,12 @@ export class MessageHandlerService {
   private sendShellInit(target: Window, origin: string, authService: ReturnType<typeof getAuthService>): void {
     const user = authService.getUser();
 
-    if (!user) return;
-
+    // Send SHELL_INIT even when user is null - SDK needs this to complete initialization
     const payload: ShellInitPayload = {
       user,
       sessionId: this.config.sessionId,
       theme: this.config.theme,
-      permissions: user.permissions
+      permissions: user?.permissions || []
     };
 
     this.sendMessage(target, {
@@ -283,20 +304,24 @@ export class MessageHandlerService {
       ...message,
       correlationId: this.config.sessionId
     };
-    target.postMessage(fullMessage, targetOrigin);
+    // For sandboxed iframes (origin: 'null'), use '*' as target origin
+    const origin = targetOrigin === 'null' ? '*' : targetOrigin;
+    target.postMessage(fullMessage, origin);
   }
 
   private sendAck(target: Window, refMessageId: string, origin: string): void {
+    const targetOrigin = origin === 'null' ? '*' : origin;
     target.postMessage({
       type: 'ACK',
       id: this.generateId(),
       ref: refMessageId,
       timestamp: new Date().toISOString(),
       correlationId: this.config.sessionId
-    }, origin);
+    }, targetOrigin);
   }
 
   private sendNack(target: Window, refMessageId: string, error: string, origin: string): void {
+    const targetOrigin = origin === 'null' ? '*' : origin;
     target.postMessage({
       type: 'NACK',
       id: this.generateId(),

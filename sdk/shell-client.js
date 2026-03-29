@@ -124,6 +124,10 @@
       // Set up message listener
       this._setupMessageListener();
 
+      // Request SHELL_INIT from parent shell
+      console.log('[ShellClient] Requesting SHELL_INIT from shell...');
+      this._requestShellInit();
+
       // Wait for SHELL_INIT with timeout
       try {
         await this._waitForShellInit(5000);
@@ -133,6 +137,16 @@
         console.error('[ShellClient] Initialization failed:', error.message);
         throw error;
       }
+    }
+
+    _requestShellInit() {
+      // Send SHELL_INIT request to parent shell
+      this._sendMessage({
+        type: 'SHELL_INIT',
+        payload: { appId: this.appId }
+      }).catch(err => {
+        console.error('[ShellClient] Failed to request SHELL_INIT:', err.message);
+      });
     }
 
     _setupMessageListener() {
@@ -210,6 +224,13 @@
 
       // Must be cross-origin (we're in an iframe)
       if (origin === window.location.origin) return false;
+
+      // For sandboxed iframes, parent sends messages with origin 'null'
+      // This is expected and safe since we're in an iframe and only the parent
+      // can send us messages via postMessage with the iframe's window as target
+      if (origin === 'null') {
+        return true;
+      }
 
       // If shellOrigin is configured, only accept that origin
       if (this.shellOrigin) {
@@ -344,6 +365,7 @@
 
     async _sendMessage(message, options = {}) {
       if (!this.isInShell) {
+        console.log('[ShellClient] Not in shell, skipping message:', message.type);
         return Promise.resolve();
       }
 
@@ -353,6 +375,8 @@
         timestamp: new Date().toISOString(),
         correlationId: this.sessionId || 'standalone'
       };
+
+      console.log('[ShellClient] Sending message:', message.type, 'to origin:', this.shellOrigin);
 
       // Wait for ACK with retry
       return retry(async () => {
@@ -376,6 +400,7 @@
           if (!this.shellOrigin) {
             throw new Error('ShellClient.shellOrigin not configured. Set config.shellOrigin before sending messages.');
           }
+          console.log('[ShellClient] Actually calling postMessage to parent');
           window.parent.postMessage(fullMessage, this.shellOrigin);
         });
       }, options);

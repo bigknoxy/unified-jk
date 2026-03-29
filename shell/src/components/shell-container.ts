@@ -436,16 +436,17 @@ export class ShellContainer extends LitElement {
 
     this.activeAppId = appId;
 
-    // Mount the app
-    await this.iframeManager?.mountApp(manifest);
-
-    // Register origin for message handling
+    // Register origin BEFORE mounting the app to avoid race condition
+    // The iframe will send SHELL_INIT immediately on load
     try {
       const url = new URL(manifest.url);
       this.messageHandler?.registerOrigin(url.origin);
     } catch {
       console.warn('[Shell] Invalid app URL:', manifest.url);
     }
+
+    // Mount the app
+    await this.iframeManager?.mountApp(manifest);
   }
 
   private handleNavCollapse(event: CustomEvent<{ collapsed: boolean }>): void {

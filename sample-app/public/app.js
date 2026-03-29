@@ -5,11 +5,13 @@
 
 // Wait for ShellClient to be available
 async function init() {
+  console.log('[SampleApp] Starting initialization...');
   const statusEl = document.getElementById('user-section');
   const standaloneNotice = document.getElementById('standalone-notice');
 
   // Initialize ShellClient
   try {
+    console.log('[SampleApp] Calling ShellClient.init with shellOrigin:', 'http://localhost:8888');
     await ShellClient.init({
       appId: 'sample-app',
       shellOrigin: 'http://localhost:8888',
