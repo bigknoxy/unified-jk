@@ -140,13 +140,19 @@
     }
 
     _requestShellInit() {
-      // Send SHELL_INIT request to parent shell
-      this._sendMessage({
+      if (!this.shellOrigin) {
+        console.error('[ShellClient] Failed to request SHELL_INIT: shellOrigin not configured');
+        return;
+      }
+
+      // SHELL_INIT is completed by the SHELL_INIT response, not ACK/NACK.
+      window.parent.postMessage({
         type: 'SHELL_INIT',
+        id: generateUUID(),
+        timestamp: new Date().toISOString(),
+        correlationId: this.sessionId || 'standalone',
         payload: { appId: this.appId }
-      }).catch(err => {
-        console.error('[ShellClient] Failed to request SHELL_INIT:', err.message);
-      });
+      }, this.shellOrigin);
     }
 
     _setupMessageListener() {
@@ -163,7 +169,7 @@
           return;
         }
 
-        const { type, id, payload, correlationId } = event.data;
+        const { type, id, ref, payload, correlationId } = event.data;
 
         if (!type) {
           console.error('[ShellClient] Message missing type');
@@ -171,21 +177,21 @@
         }
 
         // Handle ACK messages
-        if (type === 'ACK' && id) {
-          const ackHandler = this.pendingAcks.get(id);
+        if (type === 'ACK' && ref) {
+          const ackHandler = this.pendingAcks.get(ref);
           if (ackHandler) {
             ackHandler.resolve();
-            this.pendingAcks.delete(id);
+            this.pendingAcks.delete(ref);
           }
           return;
         }
 
         // Handle NACK messages
-        if (type === 'NACK' && id) {
-          const ackHandler = this.pendingAcks.get(id);
+        if (type === 'NACK' && ref) {
+          const ackHandler = this.pendingAcks.get(ref);
           if (ackHandler) {
             ackHandler.reject(new Error(payload?.error || 'Message rejected'));
-            this.pendingAcks.delete(id);
+            this.pendingAcks.delete(ref);
           }
           return;
         }
@@ -249,10 +255,17 @@
     }
 
     _sendAck(refMessageId) {
-      this._sendMessage({
+      if (!this.isInShell || !this.shellOrigin) {
+        return;
+      }
+
+      window.parent.postMessage({
         type: 'ACK',
-        ref: refMessageId
-      });
+        id: generateUUID(),
+        ref: refMessageId,
+        timestamp: new Date().toISOString(),
+        correlationId: this.sessionId || 'standalone'
+      }, this.shellOrigin);
     }
 
     async _waitForShellInit(timeoutMs) {
