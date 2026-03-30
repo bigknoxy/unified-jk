@@ -272,6 +272,14 @@ export class ShellContainer extends LitElement {
     this.initializeIframeManager();
   }
 
+  protected updated(changedProperties: Map<string | number | symbol, unknown>): void {
+    // On initial load, firstUpdated runs while loading UI is still shown.
+    // Retry iframe manager initialization once the main shell layout renders.
+    if (changedProperties.has('isLoading') && !this.isLoading) {
+      this.initializeIframeManager();
+    }
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
     this.cleanup();
