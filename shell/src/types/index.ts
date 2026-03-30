@@ -105,7 +105,7 @@ export const DEMO_USERS: User[] = [
     id: 'alice-admin',
     email: 'alice@example.com',
     name: 'Alice (Admin)',
-    permissions: ['app:read', 'app:write', 'admin:read', 'admin:write', 'documents:read', 'documents:write'],
+    permissions: ['app:read', 'app:write', 'admin:read', 'admin:write', 'documents:read', 'documents:write', 'audit:read'],
     roles: ['admin']
   },
   {

@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API Explorer - Shell Platform</title>
+
+    <!-- Shell Client SDK from CDN -->
+    <script src="http://localhost:8887/shell-client.js?v=10"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: var(--shell-font-family, Inter, sans-serif);
+        background: var(--shell-bg-primary, #ffffff);
+        color: var(--shell-text-primary, #1a1a1a);
+        padding: 24px;
+        line-height: 1.5;
+      }
+
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      h1 {
+        color: var(--shell-primary, #0066cc);
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .icon {
+        width: 32px;
+        height: 32px;
+      }
+
+      .subtitle {
+        color: var(--shell-text-secondary, #6b7280);
+        margin-bottom: 24px;
+      }
+
+      .card {
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+      }
+
+      .card h2 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: var(--shell-text-primary, #1a1a1a);
+      }
+
+      .user-badge {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: var(--shell-bg-secondary, #f3f4f6);
+        border-radius: 8px;
+        margin-bottom: 16px;
+      }
+
+      .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--shell-primary, #0066cc);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 600;
+      }
+
+      .user-info h3 {
+        font-size: 14px;
+        margin: 0;
+      }
+
+      .user-info p {
+        font-size: 12px;
+        color: var(--shell-text-secondary, #6b7280);
+        margin: 2px 0 0;
+      }
+
+      .standalone-notice {
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        color: #92400e;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+      }
+
+      .endpoint-row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        padding: 12px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        margin-bottom: 8px;
+      }
+
+      .method {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .method.get { background: #dcfce7; color: #166534; }
+      .method.post { background: #dbeafe; color: #1e40af; }
+      .method.put { background: #fef3c7; color: #92400e; }
+      .method.delete { background: #fee2e2; color: #991b1b; }
+
+      .endpoint-path {
+        flex: 1;
+        font-family: monospace;
+        font-size: 14px;
+        color: #374151;
+      }
+
+      button {
+        padding: 8px 16px;
+        background: var(--shell-primary, #0066cc);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+      }
+
+      button:hover {
+        opacity: 0.9;
+      }
+
+      button.secondary {
+        background: var(--shell-bg-secondary, #f3f4f6);
+        color: var(--shell-text-primary, #1a1a1a);
+      }
+
+      .response-panel {
+        margin-top: 12px;
+        padding: 16px;
+        background: #1e293b;
+        border-radius: 6px;
+        color: #e2e8f0;
+        font-family: monospace;
+        font-size: 13px;
+        display: none;
+        white-space: pre-wrap;
+        overflow-x: auto;
+      }
+
+      .response-panel.visible {
+        display: block;
+      }
+
+      .response-panel.error {
+        background: #450a0a;
+        color: #fecaca;
+      }
+
+      .tag {
+        display: inline-block;
+        padding: 2px 8px;
+        background: #e6f0fa;
+        color: var(--shell-primary, #0066cc);
+        border-radius: 4px;
+        font-size: 11px;
+        margin-right: 4px;
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+        </svg>
+        API Explorer
+      </h1>
+      <p class="subtitle">Developer tools for API exploration and testing</p>
+
+      <div id="standalone-notice" class="standalone-notice" style="display: none">
+        <strong>Standalone Mode</strong>: Running outside shell. API proxy features unavailable.
+      </div>
+
+      <div id="user-section" class="card" style="display: none">
+        <div class="section-header">
+          <span class="tag">AUTHENTICATED</span>
+        </div>
+        <div id="user-badge" class="user-badge"></div>
+      </div>
+
+      <div class="card">
+        <h2>Available Endpoints</h2>
+
+        <div class="endpoint-row">
+          <span class="method get">GET</span>
+          <span class="endpoint-path">/api/manifests</span>
+          <button onclick="testEndpoint('/api/manifests', 'GET')">Test</button>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method get">GET</span>
+          <span class="endpoint-path">/api/audit/events</span>
+          <button onclick="testEndpoint('/api/audit/events', 'GET')">Test</button>
+        </div>
+
+        <div class="endpoint-row">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/audit/events</span>
+          <button onclick="testEndpoint('/api/audit/events', 'POST')">Test</button>
+        </div>
+
+        <div id="response-panel" class="response-panel"></div>
+      </div>
+
+      <div class="card">
+        <h2>SDK Information</h2>
+        <div id="sdk-info" style="font-family: monospace; font-size: 13px; color: #6b7280;">
+          Loading...
+        </div>
+      </div>
+    </div>
+
+    <script>
+      async function init() {
+        const standaloneNotice = document.getElementById('standalone-notice');
+        const userSection = document.getElementById('user-section');
+        const userBadge = document.getElementById('user-badge');
+        const sdkInfo = document.getElementById('sdk-info');
+
+        try {
+          await ShellClient.init({
+            appId: 'api-explorer',
+            onThemeUpdate: (theme) => {
+              console.log('[APIExplorer] Theme updated:', theme);
+            },
+            onAuthRefresh: (user) => {
+              console.log('[APIExplorer] Auth refreshed:', user);
+              displayUser(user);
+            }
+          });
+
+          const user = ShellClient.getUser();
+          if (user) {
+            displayUser(user);
+            userSection.style.display = 'block';
+          } else {
+            standaloneNotice.style.display = 'block';
+            userSection.style.display = 'none';
+          }
+
+          sdkInfo.innerHTML = `
+            App ID: api-explorer
+            Shell Origin: ${ShellClient.shellOrigin || 'auto-detected'}
+            User: ${user ? user.name : 'none'}
+          `;
+        } catch (error) {
+          console.error('[APIExplorer] Initialization failed:', error);
+          standaloneNotice.style.display = 'block';
+          standaloneNotice.innerHTML = `<strong>Error:</strong> ${error.message}`;
+          sdkInfo.innerHTML = 'Initialization failed';
+        }
+      }
+
+      function displayUser(user) {
+        const userBadge = document.getElementById('user-badge');
+        const initials = user.name
+          .split(' ')
+          .map((n) => n[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2);
+
+        userBadge.innerHTML = `
+          <div class="avatar">${initials}</div>
+          <div class="user-info">
+            <h3>${user.name}</h3>
+            <p>${user.email}</p>
+          </div>
+        `;
+      }
+
+      async function testEndpoint(endpoint, method) {
+        const responsePanel = document.getElementById('response-panel');
+        responsePanel.classList.add('visible');
+        responsePanel.classList.remove('error');
+        responsePanel.textContent = 'Loading...';
+
+        try {
+          const result = await ShellClient.api(endpoint, { method });
+          responsePanel.textContent = JSON.stringify(result, null, 2);
+        } catch (error) {
+          responsePanel.classList.add('error');
+          responsePanel.textContent = `Error: ${error.message}`;
+        }
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    </script>
+  </body>
+</html>

@@ -24,13 +24,13 @@ export class AuditService {
   private flushTimer: number | null = null;
   private correlationId: string;
 
-  constructor(config: AuditConfig) {
+  constructor(config: Partial<AuditConfig> = {}) {
     this.config = {
-      batchSize: 10,
-      flushInterval: 5000,
-      maxRetries: 3,
-      retryDelay: 1000,
-      ...config
+      endpoint: config.endpoint ?? '/api/audit',
+      batchSize: config.batchSize ?? 10,
+      flushInterval: config.flushInterval ?? 5000,
+      maxRetries: config.maxRetries ?? 3,
+      retryDelay: config.retryDelay ?? 1000
     };
     this.correlationId = this.generateCorrelationId();
 

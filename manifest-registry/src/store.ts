@@ -9,33 +9,44 @@ import type { AppManifest } from './types.js';
 // In-memory store (reset on restart)
 const manifests = new Map<string, AppManifest>();
 
-// Seed with demo data
-// NOTE: Only Sample App is actually running (port 8886)
-// Other apps would need to be implemented and started on their respective ports
-const demoManifests: AppManifest[] = [
-  {
-    id: 'sample-app',
-    name: 'Sample App',
-    description: 'Demo application showing SDK integration',
-    url: 'http://localhost:8886/index.html',
-    icon: 'grid',
-    permissions: ['app:read'],
-    category: 'Demo',
-    order: 1,
-    version: '1.0.0'
-  },
-  {
-    id: 'api-explorer',
-    name: 'API Explorer',
-    description: 'Developer tools for API exploration (Placeholder - not implemented)',
-    url: 'http://localhost:8886/index.html?app=api-explorer',
-    icon: 'code',
-    permissions: ['app:read', 'app:write'],
-    category: 'Developer',
-    order: 2,
-    version: '0.1.0'
-  }
-];
+  // Seed with demo data
+  // NOTE: Only Sample App is actually running (port 8886)
+  // Other apps would need to be implemented and started on their respective ports
+  const demoManifests: AppManifest[] = [
+    {
+      id: 'sample-app',
+      name: 'Sample App',
+      description: 'Demo application showing SDK integration',
+      url: 'http://localhost:8886/index.html',
+      icon: 'grid',
+      permissions: ['app:read'],
+      category: 'Demo',
+      order: 1,
+      version: '1.0.0'
+    },
+    {
+      id: 'api-explorer',
+      name: 'API Explorer',
+      description: 'Developer tools for API exploration (Placeholder - not implemented)',
+      url: 'http://localhost:8886/index.html?app=api-explorer',
+      icon: 'code',
+      permissions: ['app:read', 'app:write'],
+      category: 'Developer',
+      order: 2,
+      version: '0.1.0'
+    },
+    {
+      id: 'dashboard',
+      name: 'Audit Dashboard',
+      description: 'Real-time audit logging dashboard for compliance monitoring',
+      url: 'http://localhost:8889/index.html',
+      icon: 'chart',
+      permissions: ['audit:read'],
+      category: 'Compliance',
+      order: 3,
+      version: '1.0.0'
+    }
+  ];
 
 // Initialize store
 demoManifests.forEach(m => manifests.set(m.id, m));

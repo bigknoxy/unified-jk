@@ -236,6 +236,8 @@ const config: ShellConfig = {
 4. Use `ShellClient.setState()` for persistence
 5. Submit your app manifest to the registry
 
+For detailed instructions on adding a new app, see [ADDING_APPS.md](ADDING_APPS.md).
+
 ## License
 
 MIT
