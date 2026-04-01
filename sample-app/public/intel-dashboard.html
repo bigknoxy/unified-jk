@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intelligence Dashboard — Shell Platform</title>
+  <script src="http://localhost:8887/shell-client.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #1c1917; color: #e7e5e4; padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .header { background: #292524; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #44403c; }
+    .header h1 { font-size: 20px; color: #fafaf9; }
+    .header .badge { background: #44403c; color: #a8a29e; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .card { background: #292524; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid #44403c; }
+    .card h2 { font-size: 16px; color: #a8a29e; margin-bottom: 12px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+    .stat { background: #1c1917; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #44403c; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #fafaf9; }
+    .stat-label { font-size: 12px; color: #78716c; text-transform: uppercase; margin-top: 4px; }
+    .report-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #44403c; }
+    .report-row:last-child { border-bottom: none; }
+    .report-title { font-size: 14px; font-weight: 500; color: #e7e5e4; }
+    .report-date { font-size: 12px; color: #78716c; }
+    .classification { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .class-unc { background: #1e3a5f; color: #60a5fa; }
+    .class-cui { background: #713f12; color: #fbbf24; }
+    .action-btn { padding: 8px 16px; background: #0369a1; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action-btn:hover { background: #075985; }
+    .notice { background: #44403c; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏛 Intelligence Dashboard</h1>
+      <span class="badge">UNCLASSIFIED // FOUO</span>
+    </div>
+    <div class="notice">FedRAMP Authorized — All access logged per NIST 800-53 AU-2</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-value">23</div><div class="stat-label">Active Reports</div></div>
+      <div class="stat"><div class="stat-value">8</div><div class="stat-label">Pending Review</div></div>
+      <div class="stat"><div class="stat-value">5</div><div class="stat-label">Escalated</div></div>
+    </div>
+    <div class="card">
+      <h2>Recent Intelligence Reports</h2>
+      <div class="report-row"><div><span class="report-title">IR-2026-0328: Regional Stability Assessment</span><br><span class="report-date">03/28/2026 — Analyst Team Alpha</span></div><span class="classification class-unc">UNCLASSIFIED</span></div>
+      <div class="report-row"><div><span class="report-title">IR-2026-0325: Infrastructure Threat Analysis</span><br><span class="report-date">03/25/2026 — Cyber Division</span></div><span class="classification class-cui">CUI</span></div>
+      <div class="report-row"><div><span class="report-title">IR-2026-0320: Economic Indicators Review</span><br><span class="report-date">03/20/2026 — Economic Desk</span></div><span class="classification class-unc">UNCLASSIFIED</span></div>
+      <div class="report-row"><div><span class="report-title">IR-2026-0315: Supply Chain Vulnerability</span><br><span class="report-date">03/15/2026 — Logistics Cell</span></div><span class="classification class-cui">CUI</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:12px">
+      <button class="action-btn" onclick="logAction('intel.report.viewed')">View Report</button>
+      <button class="action-btn" onclick="logAction('intel.report.created')">Create Report</button>
+    </div>
+  </div>
+  <script>
+    function logAction(action) {
+      if (window.ShellClient && ShellClient.getUser()) {
+        ShellClient.audit(action, { resource: 'intel-dashboard' });
+      }
+    }
+    (async function() {
+      try {
+        await ShellClient.init({ appId: 'intel-dashboard', shellOrigin: 'http://localhost:8888' });
+        if (!ShellClient.getUser()) {
+          document.getElementById('standalone-notice')?.style.display !== 'none';
+        } else { logAction('intel.opened'); }
+      } catch(e) { console.warn('Shell init failed:', e); }
+    })();
+  </script>
+</body>
+</html>

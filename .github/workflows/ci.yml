@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm run install:all
+
+      - name: Build shell
+        run: cd shell && npm run build
+
+      - name: Run shell tests
+        run: cd shell && npm run test
+
+      - name: Type-check audit service
+        run: cd audit-service && npx tsc --noEmit
+
+      - name: Type-check manifest registry
+        run: cd manifest-registry && npx tsc --noEmit

@@ -13,7 +13,9 @@ export const AppManifestSchema = z.object({
   permissions: z.array(z.string()).min(1),
   category: z.string().max(50).optional(),
   order: z.number().int().min(0).optional(),
-  version: z.string().regex(/^\d+\.\d+\.\d+$/)
+  version: z.string().regex(/^\d+\.\d+\.\d+$/),
+  enabled: z.boolean().default(true),
+  settings: z.record(z.unknown()).optional()
 });
 
 export type AppManifest = z.infer<typeof AppManifestSchema>;

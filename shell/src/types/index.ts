@@ -13,6 +13,8 @@ export interface AppManifest {
   category?: string;
   order?: number;
   version: string;
+  enabled?: boolean;
+  settings?: Record<string, unknown>;
 }
 
 // User Session
@@ -58,17 +60,20 @@ export interface ShellMessage {
   id: string;
   timestamp: string;
   correlationId: string;
+  workflowId?: string;
   payload?: unknown;
 }
 
 export interface ShellInitPayload {
-  user: User;
+  user: User | null;
   sessionId: string;
   theme: Theme;
   permissions: string[];
+  workflowId?: string;
 }
 
 export interface APIRequestPayload {
+  requestId?: string;
   endpoint: string;
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: unknown;
@@ -105,7 +110,7 @@ export const DEMO_USERS: User[] = [
     id: 'alice-admin',
     email: 'alice@example.com',
     name: 'Alice (Admin)',
-    permissions: ['app:read', 'app:write', 'admin:read', 'admin:write', 'documents:read', 'documents:write', 'audit:read'],
+    permissions: ['app:read', 'app:write', 'admin:read', 'admin:write', 'admin:manage', 'documents:read', 'documents:write', 'audit:read'],
     roles: ['admin']
   },
   {

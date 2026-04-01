@@ -9,10 +9,8 @@ import type { AppManifest } from './types.js';
 // In-memory store (reset on restart)
 const manifests = new Map<string, AppManifest>();
 
-  // Seed with demo data
-  // NOTE: Only Sample App is actually running (port 8886)
-  // Other apps would need to be implemented and started on their respective ports
-  const demoManifests: AppManifest[] = [
+// Seed with demo data
+const demoManifests: AppManifest[] = [
     {
       id: 'sample-app',
       name: 'Sample App',
@@ -22,18 +20,28 @@ const manifests = new Map<string, AppManifest>();
       permissions: ['app:read'],
       category: 'Demo',
       order: 1,
-      version: '1.0.0'
+      version: '1.0.0',
+      enabled: true,
+      settings: {
+        owner: 'citizen-dev',
+        supportEmail: 'support@example.com',
+      },
     },
     {
       id: 'api-explorer',
       name: 'API Explorer',
-      description: 'Developer tools for API exploration (Placeholder - not implemented)',
-      url: 'http://localhost:8886/index.html?app=api-explorer',
+      description: 'Developer tools for API exploration',
+      url: 'http://localhost:8886/api-explorer.html',
       icon: 'code',
       permissions: ['app:read', 'app:write'],
       category: 'Developer',
       order: 2,
-      version: '0.1.0'
+      version: '0.1.0',
+      enabled: true,
+      settings: {
+        owner: 'platform-team',
+        docs: '/docs/api-explorer',
+      },
     },
     {
       id: 'dashboard',
@@ -44,8 +52,43 @@ const manifests = new Map<string, AppManifest>();
       permissions: ['audit:read'],
       category: 'Compliance',
       order: 3,
-      version: '1.0.0'
-    }
+      version: '1.0.0',
+      enabled: true,
+      settings: {
+        owner: 'audit-team',
+        refreshSeconds: 15,
+      },
+    },
+    {
+      id: 'admin-manager',
+      name: 'App Manager',
+      description: 'Manage registered applications, configure metadata, and control availability',
+      url: 'http://localhost:8890/index.html',
+      icon: 'settings',
+      permissions: ['admin:manage'],
+      category: 'Administration',
+      order: 4,
+      version: '1.0.0',
+      enabled: true,
+      settings: {
+        owner: 'platform-team',
+      },
+    },
+    {
+      id: 'user-manager',
+      name: 'User Manager',
+      description: 'Manage users, roles, and permissions across the platform',
+      url: 'http://localhost:8891/index.html',
+      icon: 'users',
+      permissions: ['admin:manage'],
+      category: 'Administration',
+      order: 5,
+      version: '1.0.0',
+      enabled: true,
+      settings: {
+        owner: 'platform-team',
+      },
+    },
   ];
 
 // Initialize store
@@ -55,17 +98,14 @@ export class ManifestStore {
   /**
    * Get all manifests, optionally filtered by user permissions
    */
-  static getAll(userPermissions?: string[]): AppManifest[] {
-    const all = Array.from(manifests.values());
+  static getAll(userPermissions?: string[], includeDisabled = false): AppManifest[] {
+    const all = Array.from(manifests.values())
+      .filter(m => includeDisabled || m.enabled !== false);
 
-    if (!userPermissions) {
-      return all;
-    }
+    if (!userPermissions) return all;
+    if (userPermissions.length === 0) return [];
 
-    // Filter manifests by permissions
-    return all.filter(manifest =>
-      manifest.permissions.some(p => userPermissions.includes(p))
-    );
+    return all.filter(m => m.permissions.some(p => userPermissions.includes(p)));
   }
 
   /**
@@ -81,6 +121,23 @@ export class ManifestStore {
   static set(manifest: AppManifest): AppManifest {
     manifests.set(manifest.id, manifest);
     return manifest;
+  }
+
+  /**
+   * Partially update an existing manifest
+   */
+  static patch(id: string, updates: Partial<AppManifest>): AppManifest | undefined {
+    const current = manifests.get(id);
+    if (!current) return undefined;
+
+    const next: AppManifest = {
+      ...current,
+      ...updates,
+      id: current.id
+    };
+
+    manifests.set(id, next);
+    return next;
   }
 
   /**

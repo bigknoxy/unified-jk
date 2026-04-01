@@ -4,269 +4,145 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Audit Dashboard - Shell Platform</title>
-
-    <!-- Shell Client SDK from CDN -->
     <script src="http://localhost:8887/shell-client.js"></script>
-
     <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
+      @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap");
+      * { margin: 0; padding: 0; box-sizing: border-box; }
       body {
-        font-family: var(--shell-font-family, Inter, sans-serif);
-        background: var(--shell-bg-primary, #ffffff);
-        color: var(--shell-text-primary, #1a1a1a);
-        padding: 24px;
-        line-height: 1.5;
+        font-family: "IBM Plex Sans", var(--shell-font-family, sans-serif);
+        background: radial-gradient(circle at 8% 8%, rgba(22, 163, 74, 0.1) 0, transparent 32%),
+                    radial-gradient(circle at 90% 12%, rgba(30, 64, 175, 0.12) 0, transparent 36%),
+                    linear-gradient(160deg, #f3f7fb 0%, #eaf2f8 60%, #f6fafc 100%);
+        color: #0f172a; padding: 20px; line-height: 1.5; min-height: 100vh;
       }
+      .container { max-width: 1280px; margin: 0 auto; }
+      .hero { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: end; margin-bottom: 18px; }
+      h1 { color: #0f3a5f; margin-bottom: 4px; font-size: clamp(1.5rem, 2.6vw, 2.2rem); letter-spacing: 0.01em; }
+      .subtitle { color: #44617b; margin-bottom: 0; }
+      .hero-badges { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+      .badge { border: 1px solid #bdd4ea; background: rgba(255, 255, 255, 0.85); border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #285072; }
+      .card { background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 252, 255, 0.95) 100%); border: 1px solid #d6e5f2; border-radius: 14px; padding: 20px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); }
+      .card h2 { font-size: 18px; margin-bottom: 12px; color: #173f63; letter-spacing: 0.01em; }
+      .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; padding: 12px; background: linear-gradient(90deg, #edf6ff 0%, #f6fbff 100%); border: 1px solid #d7e7f6; border-radius: 10px; }
+      .filter-group { display: flex; flex-direction: column; gap: 4px; min-width: 180px; position: relative; }
+      .filter-group label { font-size: 11px; font-weight: 500; color: #4a6480; text-transform: uppercase; letter-spacing: 0.05em; }
+      .filter-group input, .filter-group select { padding: 8px 12px; border: 1px solid #c5d8eb; border-radius: 8px; font-size: 14px; color: #0f2740; background: #ffffff; }
+      .filter-group input:focus { outline: none; border-color: #1d4ed8; box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.1); }
+      .filter-group button { padding: 8px 16px; background: linear-gradient(135deg, #155e75 0%, #1d4ed8 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; }
+      .filter-group button:hover { opacity: 1; transform: translateY(-1px); }
+      .filter-group button.secondary { background: #eef4fa; border: 1px solid #c8d9eb; color: #274c6d; }
+      .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border: 1px solid #c5d8eb; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 100; display: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+      .autocomplete-list.active { display: block; }
+      .autocomplete-item { padding: 8px 12px; cursor: pointer; font-size: 13px; }
+      .autocomplete-item:hover, .autocomplete-item.highlighted { background: #edf6ff; }
+      .audit-table { width: 100%; border-collapse: collapse; margin-top: 16px; border: 1px solid #d7e4f2; border-radius: 10px; overflow: hidden; }
+      .audit-table th, .audit-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e5edf6; }
+      .audit-table th { background: linear-gradient(90deg, #e9f3ff 0%, #f4f9ff 100%); font-weight: 600; font-size: 12px; color: #46637f; position: sticky; top: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+      .audit-table tr:hover { background-color: #f5faff; }
+      .audit-table tr:last-child td { border-bottom: none; }
+      .audit-table tr.new-event { animation: flash-new 1s ease-out; }
+      @keyframes flash-new { 0% { background: #dbeafe; } 100% { background: transparent; } }
+      .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; text-transform: uppercase; }
+      .status-success { background: #dcfce7; color: #166534; }
+      .status-error { background: #fee2e2; color: #991b1b; }
+      .status-pending { background: #fef3c7; color: #92400e; }
+      .status-info { background: #dbeafe; color: #1e40af; }
+      .loading { text-align: center; padding: 40px; color: #4e6b86; }
+      .empty-state { text-align: center; padding: 40px; color: #4e6b86; }
+      .refresh-btn { padding: 8px 16px; background: linear-gradient(135deg, #14532d 0%, #0f766e 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; margin-top: 12px; font-weight: 700; }
+      .refresh-btn:hover { opacity: 0.9; }
+      .stats-bar { display: flex; gap: 16px; margin-bottom: 16px; padding: 14px; background: linear-gradient(90deg, #e8f3ff 0%, #eef8ff 50%, #e7fff7 100%); border: 1px solid #d5e6f6; border-radius: 12px; }
+      .stat-item { text-align: center; flex: 1; }
+      .stat-value { font-size: 24px; font-weight: 700; color: #134a72; display: block; }
+      .stat-label { font-size: 12px; color: #4e6a83; text-transform: uppercase; letter-spacing: 0.03em; }
+      .stat-sub { font-size: 11px; color: #6b7280; margin-top: 2px; }
+      .timestamp { font-family: "IBM Plex Mono", monospace; font-size: 13px; }
+      .action-cell { text-transform: capitalize; }
+      .resource-cell { font-family: "IBM Plex Mono", monospace; font-size: 13px; }
+      .standalone-notice { background: #fff7dd; border: 1px solid #f59e0b; color: #92400e; padding: 12px 16px; border-radius: 10px; margin-bottom: 16px; }
+      .error-rate { color: #dc2626; }
+      .success-rate { color: #16a34a; }
 
-      .container {
-        max-width: 1200px;
-        margin: 0 auto;
-      }
+      /* Live indicator */
+      .live-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding: 8px 0; }
+      .live-indicator { display: flex; align-items: center; gap: 8px; }
+      .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #9ca3af; }
+      .live-dot.live-active { background: #16a34a; animation: pulse-dot 2s infinite; }
+      @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+      .live-text { font-size: 13px; font-weight: 700; letter-spacing: 0.05em; }
+      .last-updated { font-size: 12px; color: #6b7280; }
+      .live-actions { display: flex; gap: 8px; align-items: center; }
+      .live-actions button { padding: 6px 12px; font-size: 12px; font-weight: 600; border: 1px solid #c5d8eb; background: #fff; border-radius: 6px; cursor: pointer; color: #274c6d; }
+      .live-actions button:hover { background: #edf6ff; }
+      .export-btn { background: linear-gradient(135deg, #155e75 0%, #1d4ed8 100%) !important; color: #fff !important; border-color: transparent !important; }
 
-      h1 {
-        color: var(--shell-primary, #0066cc);
-        margin-bottom: 16px;
-      }
+      /* Charts */
+      .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+      .chart-panel { padding: 16px; background: #f9fcff; border: 1px solid #e2edf8; border-radius: 10px; }
+      .chart-panel h3 { font-size: 13px; font-weight: 600; color: #46637f; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+      .chart-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+      .chart-label { font-size: 12px; color: #374151; min-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .chart-bar-track { flex: 1; height: 20px; background: #f3f4f6; border-radius: 4px; overflow: hidden; }
+      .chart-bar { height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 4px; transition: width 0.3s ease; }
+      .chart-value { font-size: 12px; font-weight: 600; color: #1f2937; min-width: 32px; text-align: right; }
 
-      .subtitle {
-        color: var(--shell-text-secondary, #6b7280);
-        margin-bottom: 24px;
-      }
-
-      .card {
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 16px;
-      }
-
-      .card h2 {
-        font-size: 18px;
-        margin-bottom: 12px;
-        color: var(--shell-text-primary, #1a1a1a);
-      }
-
-      .filter-bar {
-        display: flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 16px;
-        padding: 12px;
-        background: #f1f5f9;
-        border-radius: 6px;
-      }
-
-      .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-        min-width: 180px;
-      }
-
-      .filter-group label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--shell-text-primary, #1a1a1a);
-      }
-
-      .filter-group input,
-      .filter-group select {
-        padding: 8px 12px;
-        border: 1px solid #e5e7eb;
-        border-radius: 4px;
-        font-size: 14px;
-      }
-
-      .filter-group button {
-        padding: 8px 16px;
-        background: var(--shell-primary, #0066cc);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-      }
-
-      .filter-group button:hover {
-        opacity: 0.9;
-      }
-
-      .audit-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        margin-top: 16px;
-      }
-
-      .audit-table th,
-      .audit-table td {
-        padding: 12px 16px;
-        text-align: left;
-        border-bottom: 1px solid #e5e7eb;
-      }
-
-      .audit-table th {
-        background-color: #f1f5f9;
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--shell-text-primary, #1a1a1a);
-        position: sticky;
-        top: 0;
-      }
-
-      .audit-table tr:hover {
-        background-color: #f8fafc;
-      }
-
-      .audit-table tr:last-child td {
-        border-bottom: none;
-      }
-
-      .status-badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 500;
-        text-transform: uppercase;
-      }
-
-      .status-success {
-        background: #dcfce7;
-        color: #166534;
-      }
-
-      .status-error {
-        background: #fee2e2;
-        color: #991b1b;
-      }
-
-      .status-pending {
-        background: #fef3c7;
-        color: #92400e;
-      }
-
-      .loading {
-        text-align: center;
-        padding: 40px;
-        color: var(--shell-text-secondary, #6b7280);
-      }
-
-      .empty-state {
-        text-align: center;
-        padding: 40px;
-        color: var(--shell-text-secondary, #6b7280);
-      }
-
-      .refresh-btn {
-        padding: 8px 16px;
-        background: var(--shell-primary, #0066cc);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        margin-top: 12px;
-      }
-
-      .refresh-btn:hover {
-        opacity: 0.9;
-      }
-
-      .stats-bar {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 16px;
-        padding: 12px;
-        background: #f1f5f9;
-        border-radius: 6px;
-      }
-
-      .stat-item {
-        text-align: center;
-        flex: 1;
-      }
-
-      .stat-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: var(--shell-primary, #0066cc);
-        display: block;
-      }
-
-      .stat-label {
-        font-size: 14px;
-        color: var(--shell-text-secondary, #6b7280);
-      }
-
-      .timestamp {
-        font-family: monospace;
-        font-size: 13px;
-      }
-
-      .action-cell {
-        text-transform: capitalize;
-      }
-
-      .resource-cell {
-        font-family: monospace;
-        font-size: 13px;
-      }
-
-      .metadata-cell {
-        max-width: 300px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-
-      .standalone-notice {
-        background: #fef3c7;
-        border: 1px solid #f59e0b;
-        color: #92400e;
-        padding: 12px 16px;
-        border-radius: 6px;
-        margin-bottom: 16px;
-      }
+      /* Workflow timeline */
+      .wf-section { margin-bottom: 16px; }
+      .wf-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+      .wf-header h3 { font-size: 14px; color: #173f63; }
+      .wf-summary { display: flex; gap: 16px; margin-bottom: 12px; padding: 8px 12px; background: #f9fafb; border-radius: 8px; }
+      .wf-summary-item { text-align: center; }
+      .wf-summary-value { font-size: 16px; font-weight: 700; color: #111827; }
+      .wf-summary-label { font-size: 10px; color: #6b7280; text-transform: uppercase; }
+      .wf-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #f3f4f6; }
+      .wf-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+      .wf-bar-track { flex: 1; height: 24px; background: #f3f4f6; border-radius: 6px; position: relative; overflow: hidden; }
+      .wf-bar { position: absolute; top: 2px; height: 20px; border-radius: 4px; display: flex; align-items: center; padding: 0 8px; font-size: 10px; color: white; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .wf-info { min-width: 100px; font-size: 12px; color: #374151; }
 
       @media (max-width: 768px) {
-        .filter-bar {
-          flex-direction: column;
-        }
-        
-        .filter-group {
-          min-width: 100%;
-        }
-        
-        .stats-bar {
-          flex-wrap: wrap;
-        }
-        
-        .stat-item {
-          min-width: 120px;
-          margin-bottom: 8px;
-        }
-        
-        .audit-table th,
-        .audit-table td {
-          padding: 8px 12px;
-          font-size: 13px;
-        }
+        .hero { grid-template-columns: 1fr; }
+        .hero-badges { justify-content: flex-start; }
+        .filter-bar { flex-direction: column; }
+        .filter-group { min-width: 100%; }
+        .stats-bar { flex-wrap: wrap; }
+        .stat-item { min-width: 120px; margin-bottom: 8px; }
+        .audit-table th, .audit-table td { padding: 8px 12px; font-size: 13px; }
+        .charts-row { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Audit Dashboard</h1>
-      <p class="subtitle">Real-time audit logging for compliance monitoring</p>
+      <section class="hero">
+        <div>
+          <h1>Audit Operations Center</h1>
+          <p class="subtitle">Live compliance telemetry across all shell apps.</p>
+        </div>
+        <div class="hero-badges">
+          <span class="badge">Audit Ready</span>
+          <span class="badge">Forensic Friendly</span>
+          <span class="badge">Real Time</span>
+        </div>
+      </section>
 
       <div id="standalone-notice" class="standalone-notice" style="display: none">
         <strong>Standalone Mode</strong>: Running outside shell. SDK features unavailable.
+      </div>
+
+      <!-- Live bar -->
+      <div class="live-bar">
+        <div class="live-indicator">
+          <span class="live-dot" id="live-dot"></span>
+          <span class="live-text" id="live-text">CONNECTING</span>
+          <span class="last-updated" id="last-updated"></span>
+        </div>
+        <div class="live-actions">
+          <button id="pause-btn" onclick="togglePolling()">⏸ Pause</button>
+          <button onclick="refreshEvents()">↻ Refresh</button>
+          <button class="export-btn" onclick="exportData('json')">Export JSON</button>
+          <button class="export-btn" onclick="exportData('csv')">Export CSV</button>
+        </div>
       </div>
 
       <div class="card">
@@ -274,19 +150,28 @@
         <div class="filter-bar">
           <div class="filter-group">
             <label for="action-filter">Action</label>
-            <input type="text" id="action-filter" placeholder="e.g., DOCUMENT_CREATED" />
+            <input type="text" id="action-filter" placeholder="Type or select..." autocomplete="off" />
+            <div class="autocomplete-list" id="action-autocomplete"></div>
           </div>
-          
           <div class="filter-group">
             <label for="user-filter">User ID</label>
-            <input type="text" id="user-filter" placeholder="e.g., alice-admin" />
+            <input type="text" id="user-filter" placeholder="Type or select..." autocomplete="off" />
+            <div class="autocomplete-list" id="user-autocomplete"></div>
           </div>
-          
           <div class="filter-group">
             <label for="app-filter">App ID</label>
-            <input type="text" id="app-filter" placeholder="e.g., sample-app" />
+            <input type="text" id="app-filter" placeholder="Type or select..." autocomplete="off" />
+            <div class="autocomplete-list" id="app-autocomplete"></div>
           </div>
-          
+          <div class="filter-group">
+            <label for="time-range">Time Range</label>
+            <select id="time-range">
+              <option value="1h">Last hour</option>
+              <option value="24h" selected>Last 24 hours</option>
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+            </select>
+          </div>
           <div class="filter-group">
             <label for="limit">Limit</label>
             <select id="limit">
@@ -297,7 +182,6 @@
               <option value="500">500</option>
             </select>
           </div>
-          
           <div class="filter-group">
             <label>&nbsp;</label>
             <button onclick="loadAuditEvents()">Filter</button>
@@ -312,10 +196,12 @@
           <div class="stat-item">
             <span class="stat-value" id="total-events">0</span>
             <span class="stat-label">Total Events</span>
+            <div class="stat-sub" id="events-rate"></div>
           </div>
           <div class="stat-item">
             <span class="stat-value" id="events-today">0</span>
             <span class="stat-label">Today</span>
+            <div class="stat-sub" id="today-pct"></div>
           </div>
           <div class="stat-item">
             <span class="stat-value" id="unique-users">0</span>
@@ -325,15 +211,45 @@
             <span class="stat-value" id="unique-apps">0</span>
             <span class="stat-label">Unique Apps</span>
           </div>
+          <div class="stat-item">
+            <span class="stat-value success-rate" id="success-rate">-</span>
+            <span class="stat-label">Success Rate</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value error-rate" id="error-count">0</span>
+            <span class="stat-label">Errors</span>
+          </div>
         </div>
-        
+
+        <!-- Charts -->
+        <div class="charts-row">
+          <div class="chart-panel">
+            <h3>Events by User</h3>
+            <div id="chart-users"></div>
+          </div>
+          <div class="chart-panel">
+            <h3>Events by App</h3>
+            <div id="chart-apps"></div>
+          </div>
+        </div>
+
+        <!-- Workflow Timeline -->
+        <div class="wf-section" id="workflow-timeline-container" style="display: none">
+          <div class="wf-header">
+            <h3 id="wf-title">Workflow</h3>
+            <span class="status-badge" id="wf-status">active</span>
+          </div>
+          <div class="wf-summary">
+            <div class="wf-summary-item"><div class="wf-summary-value" id="wf-spans">0</div><div class="wf-summary-label">Steps</div></div>
+            <div class="wf-summary-item"><div class="wf-summary-value" id="wf-apps">0</div><div class="wf-summary-label">Apps</div></div>
+            <div class="wf-summary-item"><div class="wf-summary-value" id="wf-duration">0ms</div><div class="wf-summary-label">Duration</div></div>
+          </div>
+          <div id="wf-rows"></div>
+        </div>
+
         <div id="loading-indicator" class="loading">Loading audit events...</div>
-        <div id="empty-state" class="empty-state" style="display: none">
-          <p>No audit events found matching the current filters.</p>
-        </div>
-        
+        <div id="empty-state" class="empty-state" style="display: none"></div>
         <div id="audit-container" style="display: none">
-          <button class="refresh-btn" onclick="refreshEvents()">Refresh</button>
           <table class="audit-table" id="audit-table">
             <thead>
               <tr>
@@ -345,14 +261,11 @@
                 <th>Status</th>
               </tr>
             </thead>
-            <tbody id="audit-table-body">
-              <!-- Audit events will be populated here -->
-            </tbody>
+            <tbody id="audit-table-body"></tbody>
           </table>
         </div>
       </div>
     </div>
-
     <script src="./dashboard.js"></script>
   </body>
 </html>

@@ -32,8 +32,8 @@ export class AuthService {
 
   constructor(config: AuthConfig) {
     this.config = {
-      refreshBuffer: 60, // Refresh 60s before expiry
-      ...config
+      ...config,
+      refreshBuffer: config.refreshBuffer ?? 60 // Refresh before expiry
     };
   }
 
@@ -109,6 +109,28 @@ export class AuthService {
     return demoUser;
   }
 
+  async switchUser(userId: string): Promise<User> {
+    if (this.config.provider !== 'demo') {
+      throw new Error('User switching is only available in demo mode');
+    }
+
+    const demoUser = DEMO_USERS.find(u => u.id === userId);
+    if (!demoUser) {
+      throw new Error(`Demo user not found: ${userId}`);
+    }
+
+    this.clearSession();
+    return this.setDemoUser(userId);
+  }
+
+  getDemoUsers(): User[] {
+    return DEMO_USERS;
+  }
+
+  isDemoMode(): boolean {
+    return this.config.provider === 'demo';
+  }
+
   async handleCallback(code: string, state: string): Promise<User> {
     // Verify state
     const savedState = sessionStorage.getItem('auth_state');
@@ -164,7 +186,16 @@ export class AuthService {
     }
 
     const headers = new Headers(options.headers);
-    headers.set('Authorization', `Bearer ${token}`);
+    const isInternalApi = endpoint.startsWith('/api/');
+    const internalApiKey = (window as unknown as { SHELL_API_KEY?: string }).SHELL_API_KEY || 'dev-key-123';
+    if (!isInternalApi) {
+      headers.set('Authorization', `Bearer ${token}`);
+    } else if (internalApiKey) {
+      headers.set('x-api-key', internalApiKey);
+    }
+    if (this.user?.permissions?.length) {
+      headers.set('x-user-permissions', this.user.permissions.join(','));
+    }
 
     return fetch(endpoint, {
       ...options,
