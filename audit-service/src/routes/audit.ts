@@ -22,8 +22,26 @@ const AUDIT_LOG_FILE = join(LOGS_DIR, 'audit.jsonl');
 const stats = {
   totalEvents: 0,
   eventsToday: 0,
-  lastReset: new Date().toISOString().split('T')[0]
+  lastReset: new Date().toISOString().split('T')[0],
+  eventsByUser: new Map<string, number>(),
+  eventsByApp: new Map<string, number>(),
+  eventsByAction: new Map<string, number>()
 };
+
+/**
+ * Update in-memory stats for a single event
+ */
+function updateStatsForEvent(event: AuditEvent): void {
+  if (event.userId) {
+    stats.eventsByUser.set(event.userId, (stats.eventsByUser.get(event.userId) || 0) + 1);
+  }
+  if (event.appId) {
+    stats.eventsByApp.set(event.appId, (stats.eventsByApp.get(event.appId) || 0) + 1);
+  }
+  if (event.action) {
+    stats.eventsByAction.set(event.action, (stats.eventsByAction.get(event.action) || 0) + 1);
+  }
+}
 
 /**
  * Validate an audit event has required fields
@@ -56,6 +74,7 @@ function persistEvents(events: AuditEvent[]): { persisted: number; errors: strin
       persisted++;
       stats.totalEvents++;
       stats.eventsToday++;
+      updateStatsForEvent(event);
     } catch (error) {
       errors.push(`Failed to persist event ${event.id}: ${(error as Error).message}`);
     }
@@ -121,8 +140,10 @@ router.post('/', (req: Request, res: Response) => {
 
 // GET /api/audit - Query events (basic implementation)
 router.get('/', (req: Request, res: Response) => {
-  const { limit = '100', action, userId, appId, correlationId } = req.query;
+  const { limit = '100', action, userId, appId, correlationId, from, to } = req.query;
   const maxResults = Math.min(parseInt(limit as string, 10) || 100, 1000);
+  const fromTime = from ? new Date(from as string).getTime() : 0;
+  const toTime = to ? new Date(to as string).getTime() : Infinity;
 
   if (!existsSync(AUDIT_LOG_FILE)) {
     return res.json({
@@ -147,7 +168,11 @@ router.get('/', (req: Request, res: Response) => {
       try {
         const event = JSON.parse(line) as AuditEvent;
 
-        // Apply filters
+        // Apply time range filter
+        const eventTime = new Date(event.timestamp).getTime();
+        if (eventTime < fromTime || eventTime > toTime) continue;
+
+        // Apply other filters
         if (action && event.action !== action) continue;
         if (userId && event.userId !== userId) continue;
         if (appId && event.appId !== appId) continue;
@@ -171,7 +196,10 @@ router.get('/', (req: Request, res: Response) => {
       total: events.length,
       stats: {
         ...stats,
-        eventsInFile: events.length
+        eventsInFile: events.length,
+        eventsByUser: Object.fromEntries(stats.eventsByUser),
+        eventsByApp: Object.fromEntries(stats.eventsByApp),
+        eventsByAction: Object.fromEntries(stats.eventsByAction)
       }
     });
   });
@@ -182,6 +210,30 @@ router.get('/', (req: Request, res: Response) => {
       error: 'Failed to read audit log',
       message: (error as Error).message
     });
+  });
+});
+
+// GET /api/audit/stats - Quick stats (O(1) from in-memory counters)
+router.get('/stats', (_req: Request, res: Response) => {
+  const errorActions = ['ERROR', 'FAILED', 'DENIED', 'REJECTED', 'UNAUTHORIZED', 'FORBIDDEN'];
+  let errorCount = 0;
+  for (const [action, count] of stats.eventsByAction) {
+    if (errorActions.some(e => action.toUpperCase().includes(e))) {
+      errorCount += count;
+    }
+  }
+  const total = stats.totalEvents || 1;
+
+  res.json({
+    totalEvents: stats.totalEvents,
+    eventsToday: stats.eventsToday,
+    eventsByUser: Object.fromEntries(stats.eventsByUser),
+    eventsByApp: Object.fromEntries(stats.eventsByApp),
+    eventsByAction: Object.fromEntries(stats.eventsByAction),
+    errorCount,
+    errorRate: Math.round((errorCount / total) * 100),
+    successRate: Math.round(((total - errorCount) / total) * 100),
+    lastUpdated: new Date().toISOString()
   });
 });
 

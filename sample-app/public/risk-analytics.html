@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk Analytics — Shell Platform</title>
+  <script src="http://localhost:8887/shell-client.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f8fafc; color: #1e293b; padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .header { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 20px; color: #334155; }
+    .header .badge { background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 16px; color: #64748b; margin-bottom: 12px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+    .stat { background: #f1f5f9; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #1e293b; }
+    .stat-label { font-size: 12px; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+    .risk-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e2e8f0; }
+    .risk-row:last-child { border-bottom: none; }
+    .risk-label { font-size: 14px; color: #475569; }
+    .risk-bar { width: 120px; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden; }
+    .risk-fill { height: 100%; border-radius: 4px; }
+    .risk-low .risk-fill { background: #22c55e; }
+    .risk-med .risk-fill { background: #f59e0b; }
+    .risk-high .risk-fill { background: #ef4444; }
+    .action-btn { padding: 8px 16px; background: #6366f1; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action-btn:hover { background: #4f46e5; }
+    .notice { background: #fffbeb; border: 1px solid #fbbf24; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #92400e; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📊 Risk Analytics</h1>
+      <span class="badge">Portfolio Risk v1.8</span>
+    </div>
+    <div class="notice">SOX Compliant — Risk models audited quarterly</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-value">0.18</div><div class="stat-label">Portfolio VaR (95%)</div></div>
+      <div class="stat"><div class="stat-value">1.42</div><div class="stat-label">Sharpe Ratio</div></div>
+      <div class="stat"><div class="stat-value">0.73</div><div class="stat-label">Beta</div></div>
+    </div>
+    <div class="card">
+      <h2>Risk Exposure by Sector</h2>
+      <div class="risk-row risk-low"><span class="risk-label">Technology</span><div class="risk-bar"><div class="risk-fill" style="width:35%"></div></div><span style="font-size:13px;font-weight:600">35%</span></div>
+      <div class="risk-row risk-med"><span class="risk-label">Healthcare</span><div class="risk-bar"><div class="risk-fill" style="width:62%"></div></div><span style="font-size:13px;font-weight:600">62%</span></div>
+      <div class="risk-row risk-high"><span class="risk-label">Energy</span><div class="risk-bar"><div class="risk-fill" style="width:85%"></div></div><span style="font-size:13px;font-weight:600">85%</span></div>
+      <div class="risk-row risk-low"><span class="risk-label">Consumer</span><div class="risk-bar"><div class="risk-fill" style="width:22%"></div></div><span style="font-size:13px;font-weight:600">22%</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:12px">
+      <button class="action-btn" onclick="logAction('risk.report.generated')">Generate Risk Report</button>
+      <button class="action-btn" onclick="logAction('risk.stress.test')">Run Stress Test</button>
+    </div>
+  </div>
+  <script>
+    function logAction(action) {
+      if (window.ShellClient && ShellClient.getUser()) {
+        ShellClient.audit(action, { resource: 'risk-analytics' });
+      }
+    }
+    (async function() {
+      try {
+        await ShellClient.init({ appId: 'risk-analytics', shellOrigin: 'http://localhost:8888' });
+        if (!ShellClient.getUser()) {
+          document.getElementById('standalone-notice')?.style.display !== 'none';
+        } else { logAction('risk.opened'); }
+      } catch(e) { console.warn('Shell init failed:', e); }
+    })();
+  </script>
+</body>
+</html>

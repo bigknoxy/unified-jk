@@ -9,7 +9,7 @@ import type {
   APIRequestPayload,
   NavigationPayload,
   User,
-  Theme
+  Theme,
 } from '../types';
 import { getAuthService } from './auth';
 import { getAuditService } from './audit';
@@ -19,6 +19,8 @@ interface MessageHandlerConfig {
   sessionId: string;
   onNavigate: (path: string, preserveState?: boolean) => void;
   onSharedStateUpdate: (key: string, value: unknown) => void;
+  getActiveWorkflowId?: () => string | null;
+  onWorkflowEvent?: (event: { workflowId: string; appId: string; action: string; resource?: string; metadata?: Record<string, unknown> }) => void;
 }
 
 interface PendingAck {
@@ -30,7 +32,6 @@ interface PendingAck {
 export class MessageHandlerService {
   private config: MessageHandlerConfig;
   private pendingAcks = new Map<string, PendingAck>();
-  private sharedState = new Map<string, unknown>();
   private allowedOrigins: Set<string> = new Set();
   private boundHandleMessage: (event: MessageEvent<unknown>) => void;
 
@@ -53,9 +54,6 @@ export class MessageHandlerService {
   }
 
   private handleMessage(event: MessageEvent<unknown>): void {
-    // Debug: log all received messages
-    console.log('[Shell] Received message from', event.origin, 'data:', event.data);
-
     // Validate origin - strict CORS enforcement
     if (!this.isValidOrigin(event.origin)) {
       console.error('[Shell] Rejected message from untrusted origin:', event.origin, 'allowed:', Array.from(this.allowedOrigins));
@@ -90,24 +88,18 @@ export class MessageHandlerService {
       });
   }
 
-  private isValidOrigin(origin: string, eventSource?: Window): boolean {
-    // Must be cross-origin (we're in an iframe context)
+  private isValidOrigin(origin: string): boolean {
     if (origin === window.location.origin) return false;
 
-    // Allow if origin is registered
     if (this.allowedOrigins.has(origin)) return true;
 
-    // For sandboxed iframes without allow-same-origin, origin is null
-    // Accept if this is a message from a child iframe (we can verify the source is a Window)
-    if (origin === 'null' || origin === null as unknown as string) {
-      console.log('[Shell] Accepting message from sandboxed iframe (origin: null)');
+    // For sandboxed iframes without allow-same-origin, origin is 'null'
+    if (origin === 'null') {
       return true;
     }
 
-    // For SHELL_INIT: auto-accept child iframe origins on localhost (dev mode)
-    // This handles the race condition where iframe loads before origin is registered
+    // For SHELL_INIT: auto-accept localhost origins (dev mode)
     if (origin?.includes('localhost') || origin?.includes('127.0.0.1')) {
-      console.warn('[Shell] Auto-accepting localhost origin:', origin);
       this.allowedOrigins.add(origin);
       return true;
     }
@@ -129,9 +121,8 @@ export class MessageHandlerService {
   private async processMessage(
     message: ShellMessage,
     source: Window,
-    origin: string
+    origin: string,
   ): Promise<void> {
-    // Safely get services with null checks
     let authService: ReturnType<typeof getAuthService> | null = null;
     let auditService: ReturnType<typeof getAuditService> | null = null;
 
@@ -139,30 +130,30 @@ export class MessageHandlerService {
       authService = getAuthService();
       auditService = getAuditService();
     } catch {
-      // Services not initialized yet, reject message
       throw new Error('Services not initialized');
     }
-
-    const user = authService.getUser();
 
     // Log audit event for security-sensitive operations
     const shouldAudit = ['API_REQUEST', 'GET_TOKEN', 'NAVIGATE_REQUEST', 'SHARED_STATE_SET'].includes(message.type);
     if (shouldAudit && auditService) {
+      const payload = message.payload as { endpoint?: string; appId?: string; metadata?: Record<string, unknown> };
+      const payloadAppId = typeof payload.appId === 'string'
+        ? payload.appId
+        : (typeof payload.metadata?.appId === 'string' ? payload.metadata.appId : 'unknown');
       auditService.log('APP_MESSAGE_RECEIVED', {
-        appId: message.correlationId,
+        appId: payloadAppId,
         action: message.type,
-        resource: (message.payload as { endpoint?: string })?.endpoint
+        resource: payload.endpoint
       });
     }
 
     switch (message.type) {
       case 'SHELL_INIT':
-        // Already initialized, send current state
         this.sendShellInit(source, origin, authService);
         break;
 
       case 'AUDIT_EVENT':
-        await this.handleAuditEvent(message.payload, authService, auditService);
+        await this.handleAuditEvent(message, authService, auditService);
         break;
 
       case 'API_REQUEST':
@@ -186,15 +177,18 @@ export class MessageHandlerService {
     }
   }
 
-  private sendShellInit(target: Window, origin: string, authService: ReturnType<typeof getAuthService>): void {
+  private sendShellInit(
+    target: Window,
+    origin: string,
+    authService: ReturnType<typeof getAuthService>,
+  ): void {
     const user = authService.getUser();
-
-    // Send SHELL_INIT even when user is null - SDK needs this to complete initialization
     const payload: ShellInitPayload = {
       user,
       sessionId: this.config.sessionId,
       theme: this.config.theme,
-      permissions: user?.permissions || []
+      permissions: user?.permissions || [],
+      workflowId: this.config.getActiveWorkflowId?.() || undefined,
     };
 
     this.sendMessage(target, {
@@ -207,25 +201,38 @@ export class MessageHandlerService {
   }
 
   private async handleAuditEvent(
-    payload: unknown,
+    message: ShellMessage,
     authService: ReturnType<typeof getAuthService>,
-    auditService: ReturnType<typeof getAuditService> | null
+    auditService: ReturnType<typeof getAuditService> | null,
   ): Promise<void> {
-    const { action, resource, metadata, appId } = payload as {
+    const { action, resource, metadata, appId } = message.payload as {
       action: string;
       resource?: string;
       metadata?: Record<string, unknown>;
       appId?: string;
     };
+    const resolvedAppId = typeof appId === 'string'
+      ? appId
+      : (typeof metadata?.appId === 'string' ? metadata.appId : 'unknown');
 
     const user = authService.getUser();
 
     if (auditService) {
       auditService.log(action, {
         ...metadata,
-        appId: appId || 'unknown',
+        appId: resolvedAppId,
         userId: user?.id || 'anonymous',
         resource
+      });
+    }
+
+    if (message.workflowId && this.config.onWorkflowEvent) {
+      this.config.onWorkflowEvent({
+        workflowId: message.workflowId,
+        appId: resolvedAppId,
+        action,
+        resource,
+        metadata
       });
     }
   }
@@ -234,11 +241,14 @@ export class MessageHandlerService {
     payload: APIRequestPayload,
     source: Window,
     origin: string,
-    authService: ReturnType<typeof getAuthService>
+    authService: ReturnType<typeof getAuthService>,
   ): Promise<void> {
     try {
+      const query = payload.params ? new URLSearchParams(payload.params).toString() : '';
+      const endpoint = query ? `${payload.endpoint}${payload.endpoint.includes('?') ? '&' : '?'}${query}` : payload.endpoint;
+
       // Proxy request through auth service (adds auth headers)
-      const response = await authService.proxyRequest(payload.endpoint, {
+      const response = await authService.proxyRequest(endpoint, {
         method: payload.method,
         headers: {
           'Content-Type': 'application/json'
@@ -254,6 +264,7 @@ export class MessageHandlerService {
         timestamp: new Date().toISOString(),
         correlationId: this.config.sessionId,
         payload: {
+          requestId: payload.requestId,
           status: response.status,
           ok: response.ok,
           data
@@ -266,6 +277,7 @@ export class MessageHandlerService {
         timestamp: new Date().toISOString(),
         correlationId: this.config.sessionId,
         payload: {
+          requestId: payload.requestId,
           status: 500,
           ok: false,
           error: (error as Error).message
@@ -277,7 +289,7 @@ export class MessageHandlerService {
   private async handleGetToken(
     target: Window,
     origin: string,
-    authService: ReturnType<typeof getAuthService>
+    authService: ReturnType<typeof getAuthService>,
   ): Promise<void> {
     const token = await authService.getToken();
 
@@ -291,7 +303,6 @@ export class MessageHandlerService {
   }
 
   private handleSharedStateSet(payload: { key: string; value: unknown }): void {
-    this.sharedState.set(payload.key, payload.value);
     this.config.onSharedStateUpdate(payload.key, payload.value);
   }
 
@@ -329,7 +340,7 @@ export class MessageHandlerService {
       payload: { error },
       timestamp: new Date().toISOString(),
       correlationId: this.config.sessionId
-    }, origin);
+    }, targetOrigin);
   }
 
   private handleAck(message: ShellMessage): void {
@@ -389,7 +400,7 @@ export class MessageHandlerService {
   }
 
   private generateId(): string {
-    return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
   }
 
   destroy(): void {

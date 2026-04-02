@@ -66,9 +66,8 @@
       this.sharedState = new Map();
       this.eventListeners = new Map();
       this.pendingAcks = new Map();
-      this.messageQueue = [];
-      this.sequenceNumber = 0;
-      this.shellOrigin = null; // Configured shell origin for security
+      this.shellOrigin = null;
+      this.workflowId = null;
 
       // Detect if running in shell
       this.isInShell = this._detectShell();
@@ -121,20 +120,16 @@
         return;
       }
 
-      // Set up message listener
       this._setupMessageListener();
 
       // Request SHELL_INIT from parent shell
-      console.log('[ShellClient] Requesting SHELL_INIT from shell...');
       this._requestShellInit();
 
       // Wait for SHELL_INIT with timeout
       try {
         await this._waitForShellInit(5000);
         this.initialized = true;
-        console.log('[ShellClient] Initialized successfully');
       } catch (error) {
-        console.error('[ShellClient] Initialization failed:', error.message);
         throw error;
       }
     }
@@ -289,6 +284,7 @@
       this.sessionId = payload.sessionId || null;
       this.theme = payload.theme || null;
       this.permissions = payload.permissions || [];
+      this.workflowId = payload.workflowId || null;
 
       // Apply initial theme
       if (this.theme) {
@@ -436,6 +432,7 @@
 
       await this._sendMessage({
         type: 'AUDIT_EVENT',
+        workflowId: this.workflowId || undefined,
         payload: {
           action,
           resource: metadata.resource,
@@ -443,6 +440,14 @@
           timestamp: new Date().toISOString()
         }
       });
+    }
+
+    setWorkflowContext(workflowId) {
+      this.workflowId = workflowId;
+    }
+
+    getWorkflowContext() {
+      return this.workflowId;
     }
 
     async api(endpoint, options = {}) {
@@ -464,6 +469,7 @@
         timestamp: new Date().toISOString(),
         correlationId,
         payload: {
+          requestId: messageId,
           endpoint,
           method: options.method || 'GET',
           body: options.body,
@@ -477,7 +483,11 @@
           if (!this._isValidOrigin(event.origin)) return;
 
           const data = event.data;
-          if (data?.type === 'API_RESPONSE' && data?.correlationId === correlationId) {
+          if (
+            data?.type === 'API_RESPONSE' &&
+            data?.correlationId === correlationId &&
+            data?.payload?.requestId === messageId
+          ) {
             window.removeEventListener('message', responseHandler);
             clearTimeout(timeout);
 
@@ -589,6 +599,8 @@
     setState: (key, value) => shellClient.setState(key, value),
     getState: (key) => shellClient.getState(key),
     navigate: (path, options) => shellClient.navigate(path, options),
+    setWorkflowContext: (workflowId) => shellClient.setWorkflowContext(workflowId),
+    getWorkflowContext: () => shellClient.getWorkflowContext(),
     on: (eventType, callback) => shellClient.on(eventType, callback),
     off: (eventType, callback) => shellClient.off(eventType, callback)
   };

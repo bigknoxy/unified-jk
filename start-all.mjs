@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Shell Platform - Start All Services
- * Single command to start SDK, Shell, Sample App, Audit Service, and Manifest Registry
+ * Single command to start SDK, Shell, Sample App, Audit Dashboard, Audit Service, and Manifest Registry
  */
 
 import { spawn, execSync } from 'child_process';
@@ -10,9 +10,9 @@ import { dirname, join } from 'path';
 import { mkdirSync } from 'fs';
 
 // Ports used by services
-const SERVICE_PORTS = [8888, 8887, 8886, 8080, 8081];
+const SERVICE_PORTS = [8888, 8887, 8886, 8889, 8890, 8891, 8080, 8081];
 
-function killProcessesOnPorts() {
+async function killProcessesOnPorts() {
   console.log('Checking for existing processes on service ports...');
   for (const port of SERVICE_PORTS) {
     try {
@@ -65,7 +65,7 @@ function killProcessesOnPorts() {
   }
   // Give processes time to shut down
   console.log('Waiting for ports to be released...');
-  execSync('sleep 1');
+  await new Promise(resolve => setTimeout(resolve, 1000));
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -76,6 +76,9 @@ const colors = {
   sdk: '\x1b[36m',      // Cyan
   shell: '\x1b[34m',    // Blue
   sample: '\x1b[32m',   // Green
+  dashboard: '\x1b[96m',// Bright Cyan
+  admin: '\x1b[38;5;208m',  // Orange
+  users: '\x1b[38;5;199m',  // Pink
   audit: '\x1b[33m',    // Yellow
   registry: '\x1b[35m', // Magenta
   reset: '\x1b[0m',
@@ -118,6 +121,33 @@ const services = [
     cmd: 'sh',
     args: ['-c', 'echo "[SAMPLE] Starting on http://localhost:8886" && python3 -m http.server 8886'],
     color: colors.sample,
+    readyPattern: /Starting on/
+  },
+  {
+    name: 'Audit Dashboard',
+    short: 'DASH',
+    dir: 'dashboard-app/public',
+    cmd: 'sh',
+    args: ['-c', 'echo "[DASH] Starting on http://localhost:8889" && python3 -m http.server 8889'],
+    color: colors.dashboard,
+    readyPattern: /Starting on/
+  },
+  {
+    name: 'Admin Manager',
+    short: 'ADMIN',
+    dir: 'admin-manager/public',
+    cmd: 'sh',
+    args: ['-c', 'echo "[ADMIN] Starting on http://localhost:8890" && python3 -m http.server 8890'],
+    color: colors.admin,
+    readyPattern: /Starting on/
+  },
+  {
+    name: 'User Manager',
+    short: 'USERS',
+    dir: 'user-manager/public',
+    cmd: 'sh',
+    args: ['-c', 'echo "[USERS] Starting on http://localhost:8891" && python3 -m http.server 8891'],
+    color: colors.users,
     readyPattern: /Starting on/
   },
   {
@@ -206,6 +236,9 @@ services.forEach(service => {
         console.log(`${colors.info}========================================${colors.reset}`);
         console.log(`${colors.shell}  Shell:       http://localhost:8888${colors.reset}`);
         console.log(`${colors.sample}  Sample App:  http://localhost:8886${colors.reset}`);
+        console.log(`${colors.dashboard}  Dashboard:   http://localhost:8889${colors.reset}`);
+        console.log(`${colors.admin}  Admin Mgr:   http://localhost:8890${colors.reset}`);
+        console.log(`${colors.users}  User Mgr:    http://localhost:8891${colors.reset}`);
         console.log(`${colors.sdk}  SDK CDN:     http://localhost:8887${colors.reset}`);
         console.log(`${colors.audit}  Audit:       http://localhost:8080${colors.reset}`);
         console.log(`${colors.registry}  Registry:    http://localhost:8081${colors.reset}`);

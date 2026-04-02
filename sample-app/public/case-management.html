@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Case Management — Shell Platform</title>
+  <script src="http://localhost:8887/shell-client.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #1c1917; color: #e7e5e4; padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .header { background: #292524; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #44403c; }
+    .header h1 { font-size: 20px; color: #fafaf9; }
+    .header .badge { background: #44403c; color: #a8a29e; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .card { background: #292524; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid #44403c; }
+    .card h2 { font-size: 16px; color: #a8a29e; margin-bottom: 12px; }
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .stat { background: #1c1917; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #44403c; }
+    .stat-value { font-size: 24px; font-weight: 700; color: #fafaf9; }
+    .stat-label { font-size: 11px; color: #78716c; text-transform: uppercase; margin-top: 4px; }
+    .case-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #44403c; }
+    .case-row:last-child { border-bottom: none; }
+    .case-id { font-family: monospace; font-size: 13px; color: #a8a29e; }
+    .case-title { font-size: 14px; color: #e7e5e4; }
+    .case-status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .status-open { background: #1e3a5f; color: #60a5fa; }
+    .status-active { background: #713f12; color: #fbbf24; }
+    .status-closed { background: #14532d; color: #4ade80; }
+    .action-btn { padding: 8px 16px; background: #0369a1; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action-btn:hover { background: #075985; }
+    .notice { background: #44403c; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📋 Case Management</h1>
+      <span class="badge">Investigation Tracker</span>
+    </div>
+    <div class="notice">FedRAMP Authorized — Case data protected per FISMA Moderate</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-value">14</div><div class="stat-label">Open Cases</div></div>
+      <div class="stat"><div class="stat-value">7</div><div class="stat-label">Active</div></div>
+      <div class="stat"><div class="stat-value">42</div><div class="stat-label">Resolved (YTD)</div></div>
+      <div class="stat"><div class="stat-value">3.2d</div><div class="stat-label">Avg Resolution</div></div>
+    </div>
+    <div class="card">
+      <h2>Active Cases</h2>
+      <div class="case-row"><div><span class="case-id">INV-2026-0089</span><br><span class="case-title">Unauthorized Access Attempt — Server Farm B</span></div><span class="case-status status-active">Active</span></div>
+      <div class="case-row"><div><span class="case-id">INV-2026-0087</span><br><span class="case-title">Data Exfiltration Investigation — Network Segment 4</span></div><span class="case-status status-active">Active</span></div>
+      <div class="case-row"><div><span class="case-id">INV-2026-0084</span><br><span class="case-title">Policy Violation — Credential Sharing</span></div><span class="case-status status-open">Open</span></div>
+      <div class="case-row"><div><span class="case-id">INV-2026-0081</span><br><span class="case-title">Insider Threat Assessment — Contractor Review</span></div><span class="case-status status-closed">Closed</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:12px">
+      <button class="action-btn" onclick="logAction('case.created')">Open New Case</button>
+      <button class="action-btn" onclick="logAction('case.searched')">Search Cases</button>
+    </div>
+  </div>
+  <script>
+    function logAction(action) {
+      if (window.ShellClient && ShellClient.getUser()) {
+        ShellClient.audit(action, { resource: 'case-management' });
+      }
+    }
+    (async function() {
+      try {
+        await ShellClient.init({ appId: 'case-management', shellOrigin: 'http://localhost:8888' });
+        if (!ShellClient.getUser()) {
+          document.getElementById('standalone-notice')?.style.display !== 'none';
+        } else { logAction('case.opened'); }
+      } catch(e) { console.warn('Shell init failed:', e); }
+    })();
+  </script>
+</body>
+</html>

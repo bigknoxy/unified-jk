@@ -5,8 +5,7 @@
 
 import { LitElement, html, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import type { NavItem, User } from '../types';
-import { getAuthService } from '../services/auth';
+import type { NavItem } from '../types';
 
 @customElement('shell-navigation')
 export class ShellNavigation extends LitElement {
@@ -123,11 +122,6 @@ export class ShellNavigation extends LitElement {
       margin: 8px 16px;
     }
   `;
-
-  private hasPermission(permissions: string[]): boolean {
-    const authService = getAuthService();
-    return authService.hasAnyPermission(permissions);
-  }
 
   private handleNavClick(item: NavItem): void {
     this.dispatchEvent(

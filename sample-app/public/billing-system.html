@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Billing System — Shell Platform</title>
+  <script src="http://localhost:8887/shell-client.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #f7fafc; color: #1a202c; padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .header { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 20px; color: #2d3748; }
+    .header .badge { background: #f0fff4; color: #276749; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+    .card h2 { font-size: 16px; color: #4a5568; margin-bottom: 12px; }
+    .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
+    .stat { background: #f7fafc; border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-value { font-size: 28px; font-weight: 700; color: #2d3748; }
+    .stat-label { font-size: 12px; color: #718096; text-transform: uppercase; margin-top: 4px; }
+    .claim-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #edf2f7; }
+    .claim-row:last-child { border-bottom: none; }
+    .claim-id { font-size: 13px; color: #718096; font-family: monospace; }
+    .claim-amount { font-size: 14px; font-weight: 600; }
+    .claim-status { padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .status-paid { background: #c6f6d5; color: #276749; }
+    .status-pending { background: #fefcbf; color: #975a16; }
+    .status-denied { background: #fed7d7; color: #c53030; }
+    .action-btn { padding: 8px 16px; background: #38a169; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action-btn:hover { background: #2f855a; }
+    .action-btn.secondary { background: #edf2f7; color: #4a5568; }
+    .notice { background: #fffff0; border: 1px solid #f6e05e; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #975a16; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>💰 Billing System</h1>
+      <span class="badge">Insurance Claims v2.1</span>
+    </div>
+    <div class="notice">SOX Compliant — All financial transactions audited</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-value">$284,520</div><div class="stat-label">Revenue (MTD)</div></div>
+      <div class="stat"><div class="stat-value">94.2%</div><div class="stat-label">Claim Acceptance</div></div>
+      <div class="stat"><div class="stat-value">12</div><div class="stat-label">Pending Claims</div></div>
+    </div>
+    <div class="card">
+      <h2>Recent Claims</h2>
+      <div class="claim-row"><div><span class="claim-id">CLM-20260328-001</span><br><span style="font-size:13px;color:#4a5568">Annual Physical — CPT 99213</span></div><span class="claim-amount">$185.00</span><span class="claim-status status-paid">Paid</span></div>
+      <div class="claim-row"><div><span class="claim-id">CLM-20260214-004</span><br><span style="font-size:13px;color:#4a5568">Lab Panel — CPT 80053</span></div><span class="claim-amount">$342.00</span><span class="claim-status status-paid">Paid</span></div>
+      <div class="claim-row"><div><span class="claim-id">CLM-20260315-008</span><br><span style="font-size:13px;color:#4a5568">Cardiology Consult — CPT 99244</span></div><span class="claim-amount">$520.00</span><span class="claim-status status-pending">Pending</span></div>
+      <div class="claim-row"><div><span class="claim-id">CLM-20260301-012</span><br><span style="font-size:13px;color:#4a5568">MRI Scan — CPT 70553</span></div><span class="claim-amount">$1,240.00</span><span class="claim-status status-denied">Denied</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:12px">
+      <button class="action-btn" onclick="logAction('billing.claim.submitted')">Submit Claim</button>
+      <button class="action-btn secondary" onclick="logAction('billing.report.generated')">Generate Report</button>
+    </div>
+  </div>
+  <script>
+    function logAction(action) {
+      if (window.ShellClient && ShellClient.getUser()) {
+        ShellClient.audit(action, { resource: 'billing-system' });
+      }
+    }
+    (async function() {
+      try {
+        await ShellClient.init({ appId: 'billing-system', shellOrigin: 'http://localhost:8888' });
+        if (!ShellClient.getUser()) {
+          document.getElementById('standalone-notice')?.style.display !== 'none';
+        } else { logAction('billing.opened'); }
+      } catch(e) { console.warn('Shell init failed:', e); }
+    })();
+  </script>
+</body>
+</html>

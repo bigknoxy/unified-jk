@@ -6,7 +6,29 @@
 import { Request, Response, NextFunction } from 'express';
 
 const API_KEYS = process.env.API_KEYS?.split(',') || ['dev-key-123'];
-const SHELL_ORIGINS = process.env.SHELL_ORIGINS?.split(',') || ['http://localhost:8888'];
+
+function getPermissions(req: Request): string[] {
+  return req.headers['x-user-permissions']
+    ?.toString()
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean) || [];
+}
+
+function hasAdminWrite(req: Request): boolean {
+  const permissions = getPermissions(req);
+  return permissions.includes('admin:write');
+}
+
+function hasAdminRead(req: Request): boolean {
+  const permissions = getPermissions(req);
+  return permissions.includes('admin:read') || permissions.includes('admin:write');
+}
+
+function hasValidApiKey(req: Request): boolean {
+  const apiKey = req.headers['x-api-key'] || req.headers.authorization?.replace('Bearer ', '');
+  return !!apiKey && API_KEYS.includes(apiKey as string);
+}
 
 export function authMiddleware(
   req: Request,
@@ -15,30 +37,39 @@ export function authMiddleware(
 ): void {
   // Allow GET requests without auth for manifest listing
   if (req.method === 'GET') {
+    if (req.query.includeDisabled === 'true') {
+      if (!hasValidApiKey(req)) {
+        res.status(401).json({
+          error: 'Unauthorized',
+          message: 'Missing or invalid API key'
+        });
+        return;
+      }
+
+      if (!hasAdminRead(req)) {
+        res.status(403).json({
+          error: 'Forbidden',
+          message: 'admin:read permission required to include disabled apps'
+        });
+        return;
+      }
+    }
+
     return next();
   }
 
-  // Check Origin header for shell
-  const origin = req.headers.origin;
-  if (origin && SHELL_ORIGINS.includes(origin)) {
-    return next();
-  }
-
-  // Check API key for programmatic access
-  const apiKey = req.headers['x-api-key'] || req.headers.authorization?.replace('Bearer ', '');
-
-  if (!apiKey) {
+  if (!hasValidApiKey(req)) {
     res.status(401).json({
       error: 'Unauthorized',
-      message: 'Missing API key'
+      message: 'Missing or invalid API key'
     });
     return;
   }
 
-  if (!API_KEYS.includes(apiKey as string)) {
+  if (!hasAdminWrite(req)) {
     res.status(403).json({
       error: 'Forbidden',
-      message: 'Invalid API key'
+      message: 'admin:write permission required'
     });
     return;
   }

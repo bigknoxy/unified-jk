@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trading Desk — Shell Platform</title>
+  <script src="http://localhost:8887/shell-client.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .header { background: #1e293b; border-radius: 12px; padding: 20px 24px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+    .header h1 { font-size: 20px; color: #f1f5f9; }
+    .header .badge { background: #1e3a5f; color: #60a5fa; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px 24px; margin-bottom: 16px; border: 1px solid #334155; }
+    .card h2 { font-size: 16px; color: #94a3b8; margin-bottom: 12px; }
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .stat { background: #0f172a; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #334155; }
+    .stat-value { font-size: 24px; font-weight: 700; }
+    .stat-label { font-size: 11px; color: #64748b; text-transform: uppercase; margin-top: 4px; }
+    .green { color: #4ade80; }
+    .red { color: #f87171; }
+    .ticker-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .ticker-row:last-child { border-bottom: none; }
+    .ticker-symbol { font-weight: 700; font-size: 14px; color: #f1f5f9; }
+    .ticker-price { font-family: monospace; font-size: 14px; }
+    .ticker-change { font-size: 13px; font-weight: 600; }
+    .action-btn { padding: 8px 16px; background: #3b82f6; color: #fff; border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .action-btn:hover { background: #2563eb; }
+    .action-btn.sell { background: #ef4444; }
+    .action-btn.sell:hover { background: #dc2626; }
+    .notice { background: #1e293b; border: 1px solid #f59e0b; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📈 Trading Desk</h1>
+      <span class="badge">Market Data — Live</span>
+    </div>
+    <div class="notice">SOX Regulated — All trades logged with timestamp and attribution</div>
+    <div class="stat-row">
+      <div class="stat"><div class="stat-value green">+$12,847</div><div class="stat-label">P&L Today</div></div>
+      <div class="stat"><div class="stat-value">$2.4M</div><div class="stat-label">Portfolio Value</div></div>
+      <div class="stat"><div class="stat-value">47</div><div class="stat-label">Open Positions</div></div>
+      <div class="stat"><div class="stat-value green">3.2%</div><div class="stat-label">Daily Return</div></div>
+    </div>
+    <div class="card">
+      <h2>Watchlist</h2>
+      <div class="ticker-row"><span class="ticker-symbol">AAPL</span><span class="ticker-price">$178.42</span><span class="ticker-change green">+1.24%</span></div>
+      <div class="ticker-row"><span class="ticker-symbol">MSFT</span><span class="ticker-price">$412.88</span><span class="ticker-change green">+0.87%</span></div>
+      <div class="ticker-row"><span class="ticker-symbol">GOOGL</span><span class="ticker-price">$156.30</span><span class="ticker-change red">-0.32%</span></div>
+      <div class="ticker-row"><span class="ticker-symbol">TSLA</span><span class="ticker-price">$248.90</span><span class="ticker-change green">+2.15%</span></div>
+      <div class="ticker-row"><span class="ticker-symbol">NVDA</span><span class="ticker-price">$892.15</span><span class="ticker-change green">+3.41%</span></div>
+    </div>
+    <div class="card" style="display:flex;gap:12px">
+      <button class="action-btn" onclick="logAction('trade.order.placed')">Place Buy Order</button>
+      <button class="action-btn sell" onclick="logAction('trade.order.sold')">Place Sell Order</button>
+    </div>
+  </div>
+  <script>
+    function logAction(action) {
+      if (window.ShellClient && ShellClient.getUser()) {
+        ShellClient.audit(action, { resource: 'trading-desk' });
+      }
+    }
+    (async function() {
+      try {
+        await ShellClient.init({ appId: 'trading-desk', shellOrigin: 'http://localhost:8888' });
+        if (!ShellClient.getUser()) {
+          document.getElementById('standalone-notice')?.style.display !== 'none';
+        } else { logAction('trading.opened'); }
+      } catch(e) { console.warn('Shell init failed:', e); }
+    })();
+  </script>
+</body>
+</html>

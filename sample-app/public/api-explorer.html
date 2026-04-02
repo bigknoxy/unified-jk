@@ -6,7 +6,7 @@
     <title>API Explorer - Shell Platform</title>
 
     <!-- Shell Client SDK from CDN -->
-    <script src="http://localhost:8887/shell-client.js?v=10"></script>
+    <script src="http://localhost:8887/shell-client.js?v=11"></script>
 
     <style>
       * {
@@ -257,6 +257,7 @@
         try {
           await ShellClient.init({
             appId: 'api-explorer',
+            shellOrigin: 'http://localhost:8888',
             onThemeUpdate: (theme) => {
               console.log('[APIExplorer] Theme updated:', theme);
             },
@@ -297,13 +298,25 @@
           .toUpperCase()
           .slice(0, 2);
 
-        userBadge.innerHTML = `
-          <div class="avatar">${initials}</div>
-          <div class="user-info">
-            <h3>${user.name}</h3>
-            <p>${user.email}</p>
-          </div>
-        `;
+        const avatar = document.createElement('div');
+        avatar.className = 'avatar';
+        avatar.textContent = initials;
+
+        const info = document.createElement('div');
+        info.className = 'user-info';
+
+        const name = document.createElement('h3');
+        name.textContent = user.name;
+
+        const email = document.createElement('p');
+        email.textContent = user.email;
+
+        info.appendChild(name);
+        info.appendChild(email);
+
+        userBadge.innerHTML = '';
+        userBadge.appendChild(avatar);
+        userBadge.appendChild(info);
       }
 
       async function testEndpoint(endpoint, method) {
