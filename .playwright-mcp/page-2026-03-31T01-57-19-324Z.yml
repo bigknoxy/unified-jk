@@ -1,0 +1,123 @@
+- generic [ref=e4]:
+  - banner [ref=e6]:
+    - heading "App Shell" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - button "Close App Admin" [ref=e53] [cursor=pointer]
+      - button "A( Alice (Admin)" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: A(
+        - generic [ref=e14]: Alice (Admin)
+        - img [ref=e15]
+  - generic [ref=e17]:
+    - navigation [ref=e19]:
+      - button [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+      - link "Sample App" [ref=e113] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e24]
+        - generic [ref=e29]: Sample App
+      - link "API Explorer" [ref=e114] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e115]
+        - generic [ref=e36]: API Explorer
+      - link "Audit Dashboard" [ref=e120] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e121]
+        - generic [ref=e123]: Audit Dashboard
+    - generic [ref=e41]:
+      - generic [ref=e55]:
+        - generic [ref=e57]:
+          - paragraph [ref=e58]: App Manifest Admin
+          - paragraph [ref=e59]: Edit app URL and metadata, or enable and disable apps live.
+        - generic [ref=e60]:
+          - article [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]:
+                - generic [ref=e64]: Sample App
+                - generic [ref=e65]: sample-app • http://localhost:8886/index.html?from-admin=true
+              - generic [ref=e66]:
+                - generic [ref=e67]: Enabled
+                - button "Disable" [ref=e124] [cursor=pointer]
+                - button "Close" [ref=e88] [cursor=pointer]
+            - generic [ref=e89]:
+              - generic [ref=e90]:
+                - generic [ref=e91]:
+                  - text: Name
+                  - textbox "Name" [ref=e92]: Sample App
+                - generic [ref=e93]:
+                  - text: URL
+                  - textbox "URL" [ref=e94]: http://localhost:8886/index.html?from-admin=true
+                - generic [ref=e95]:
+                  - text: Category
+                  - textbox "Category" [ref=e96]: Demo
+                - generic [ref=e97]:
+                  - text: Icon
+                  - textbox "Icon" [ref=e98]: grid
+                - generic [ref=e99]:
+                  - text: Version
+                  - textbox "Version" [ref=e100]: 1.0.0
+              - generic [ref=e101]:
+                - text: Description
+                - textbox "Description" [ref=e102]: Admin updated description from manifest panel
+              - generic [ref=e103]:
+                - text: Settings JSON
+                - textbox "Settings JSON" [ref=e104]: "{ \"owner\": \"citizen-dev\", \"supportEmail\": \"support@example.com\" }"
+              - generic [ref=e105]:
+                - button "Cancel" [ref=e106] [cursor=pointer]
+                - button "Save changes" [ref=e107] [cursor=pointer]
+          - article [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - generic [ref=e73]: API Explorer
+                - generic [ref=e74]: api-explorer • http://localhost:8886/api-explorer.html
+              - generic [ref=e75]:
+                - generic [ref=e76]: Enabled
+                - button "Disable" [ref=e77] [cursor=pointer]
+                - button "Edit" [ref=e78] [cursor=pointer]
+          - article [ref=e79]:
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - generic [ref=e82]: Audit Dashboard
+                - generic [ref=e83]: dashboard • http://localhost:8889/index.html
+              - generic [ref=e84]:
+                - generic [ref=e85]: Enabled
+                - button "Disable" [ref=e86] [cursor=pointer]
+                - button "Edit" [ref=e87] [cursor=pointer]
+      - iframe [ref=e125]:
+        - generic [ref=f3e2]:
+          - generic [ref=f3e3]:
+            - generic [ref=f3e4]:
+              - heading "Audit Operations Center" [level=1] [ref=f3e5]
+              - paragraph [ref=f3e6]: Live compliance telemetry across all shell apps with analyst-grade filters.
+            - generic [ref=f3e7]:
+              - generic [ref=f3e8]: Audit Ready
+              - generic [ref=f3e9]: Forensic Friendly
+              - generic [ref=f3e10]: Real Time
+          - generic [ref=f3e11]:
+            - heading "Filters" [level=2] [ref=f3e12]
+            - generic [ref=f3e13]:
+              - generic [ref=f3e14]:
+                - generic [ref=f3e15]: Action
+                - textbox "Action" [ref=f3e16]:
+                  - /placeholder: e.g., DOCUMENT_CREATED
+              - generic [ref=f3e17]:
+                - generic [ref=f3e18]: User ID
+                - textbox "User ID" [ref=f3e19]:
+                  - /placeholder: e.g., alice-admin
+              - generic [ref=f3e20]:
+                - generic [ref=f3e21]: App ID
+                - textbox "App ID" [ref=f3e22]:
+                  - /placeholder: e.g., sample-app
+              - generic [ref=f3e23]:
+                - generic [ref=f3e24]: Limit
+                - combobox "Limit" [ref=f3e25]:
+                  - option "10"
+                  - option "25"
+                  - option "50"
+                  - option "100" [selected]
+                  - option "500"
+              - generic [ref=f3e26]:
+                - button "Filter" [ref=f3e28] [cursor=pointer]
+                - button "Clear" [ref=f3e29] [cursor=pointer]
+          - generic [ref=f3e30]:
+            - heading "Audit Events" [level=2] [ref=f3e31]
+            - paragraph [ref=f3e33]: "Failed to load audit events: API request failed"

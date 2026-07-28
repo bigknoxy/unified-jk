@@ -1,0 +1,65 @@
+- generic [ref=e4]:
+  - banner [ref=e6]:
+    - heading "App Shell" [level=1] [ref=e8]
+    - button "A( Alice (Admin)" [ref=e11] [cursor=pointer]:
+      - generic [ref=e12]: A(
+      - generic [ref=e13]: Alice (Admin)
+      - img [ref=e14]
+  - generic [ref=e16]:
+    - navigation [ref=e18]:
+      - button [ref=e19] [cursor=pointer]:
+        - img [ref=e20]
+      - link "Sample App" [ref=e22] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e23]
+        - generic [ref=e28]: Sample App
+      - link "API Explorer" [ref=e29] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e30]
+        - generic [ref=e35]: API Explorer
+      - link "Audit Dashboard" [ref=e36] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e37]
+        - generic [ref=e39]: Audit Dashboard
+    - iframe [ref=e50]:
+      - generic [ref=f15e2]:
+        - heading "Sample App" [level=1] [ref=f15e3]
+        - paragraph [ref=f15e4]: Demonstrates Shell Platform SDK integration
+        - generic [ref=f15e5]:
+          - heading "User Session" [level=2] [ref=f15e6]
+          - generic [ref=f15e8]:
+            - generic [ref=f15e9]: A(
+            - generic [ref=f15e10]:
+              - heading "Alice (Admin)" [level=3] [ref=f15e11]
+              - paragraph [ref=f15e12]: alice@example.com
+              - paragraph [ref=f15e13]:
+                - generic [ref=f15e14]: app:read
+                - generic [ref=f15e15]: app:write
+                - generic [ref=f15e16]: admin:read
+                - generic [ref=f15e17]: admin:write
+                - generic [ref=f15e18]: documents:read
+        - generic [ref=f15e19]:
+          - heading "Audit Logging" [level=2] [ref=f15e20]
+          - paragraph [ref=f15e21]: "Send audit events to the shell platform:"
+          - generic [ref=f15e22]:
+            - button "Log \"Create Document\"" [ref=f15e23] [cursor=pointer]
+            - button "Log \"Update Record\"" [ref=f15e24] [cursor=pointer]
+            - button "Log \"Delete Item\"" [ref=f15e25] [cursor=pointer]
+        - generic [ref=f15e26]:
+          - heading "Shared State" [level=2] [ref=f15e27]
+          - paragraph [ref=f15e28]: "Persist data across app switches:"
+          - generic [ref=f15e29]:
+            - textbox "Key (e.g., 'draft')" [ref=f15e30]
+            - textbox "Value" [ref=f15e31]
+            - button "Save" [ref=f15e32] [cursor=pointer]
+          - button "Load Saved Value" [ref=f15e33] [cursor=pointer]
+        - generic [ref=f15e34]:
+          - heading "Navigation" [level=2] [ref=f15e35]
+          - paragraph [ref=f15e36]: "Request shell to navigate to another app:"
+          - generic [ref=f15e37]:
+            - button "Go to Documents" [ref=f15e38] [cursor=pointer]
+            - button "Go to Settings" [ref=f15e39] [cursor=pointer]
+        - generic [ref=f15e40]:
+          - heading "Theme" [level=2] [ref=f15e41]
+          - paragraph [ref=f15e42]: "Theme is automatically applied via CSS custom properties:"
+          - generic [ref=f15e43]: "--shell-primary: #0066cc --shell-text-primary: #1a1a1a --shell-bg-primary: #ffffff"

@@ -42,6 +42,7 @@ export class ShellContainer extends LitElement {
   private workflowTracker = new WorkflowTracker();
   private sharedState = new Map<string, unknown>();
   private demoController = new DemoController();
+  private stopDemoControllerListener?: () => void;
 
   static styles = css`
     :host {
@@ -552,6 +553,152 @@ export class ShellContainer extends LitElement {
       border: 1px solid #fecaca;
     }
 
+    .walkthrough-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 10000;
+      animation: overlay-in 0.2s ease-out;
+    }
+
+    .walkthrough-panel {
+      background: var(--shell-bg-primary, #ffffff);
+      border-radius: 16px 16px 0 0;
+      padding: 32px;
+      max-width: 520px;
+      width: 100%;
+      max-height: 80vh;
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+      animation: slide-up 0.2s ease-out;
+      overflow-y: auto;
+    }
+
+    .wt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .wt-progress {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--shell-text-secondary, #6b7280);
+    }
+
+    .wt-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--shell-text-secondary, #6b7280);
+      padding: 4px 8px;
+      border-radius: 4px;
+    }
+
+    .wt-close:hover {
+      background: var(--shell-bg-secondary, #f3f4f6);
+    }
+
+    .wt-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--shell-text-primary, #1a1a1a);
+      margin: 0 0 12px;
+    }
+
+    .wt-narrative {
+      font-size: 14px;
+      color: var(--shell-text-secondary, #6b7280);
+      line-height: 1.6;
+      margin: 0 0 16px;
+    }
+
+    .wt-observe {
+      padding: 12px 16px;
+      background: #eff6ff;
+      border-left: 3px solid var(--shell-primary, #0066cc);
+      border-radius: 0 8px 8px 0;
+      font-size: 13px;
+      color: #1e40af;
+      margin-bottom: 24px;
+    }
+
+    .wt-observe strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .wt-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .wt-btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--shell-border-color, #e5e7eb);
+      background: var(--shell-bg-primary, #ffffff);
+      color: var(--shell-text-primary, #1a1a1a);
+    }
+
+    .wt-btn:hover {
+      background: var(--shell-bg-secondary, #f3f4f6);
+    }
+
+    .wt-btn.primary {
+      background: var(--shell-primary, #0066cc);
+      color: white;
+      border-color: var(--shell-primary, #0066cc);
+    }
+
+    .wt-btn.primary:hover {
+      background: var(--shell-primary-dark, #0055aa);
+    }
+
+    .wt-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .wt-complete {
+      text-align: center;
+      padding: 24px 0;
+    }
+
+    .wt-complete h3 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      color: var(--shell-text-primary, #1a1a1a);
+    }
+
+    .wt-complete p {
+      font-size: 14px;
+      color: var(--shell-text-secondary, #6b7280);
+      margin: 0 0 24px;
+    }
+
+    @keyframes overlay-in {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slide-up {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
     @keyframes toast-in {
       from { opacity: 0; transform: translateX(-50%) translateY(8px); }
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -560,6 +707,9 @@ export class ShellContainer extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+    this.stopDemoControllerListener = this.demoController.onChange(() => {
+      this.requestUpdate();
+    });
     await this.initializeServices();
 
     // Listen for demo login event
@@ -581,6 +731,7 @@ export class ShellContainer extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.stopDemoControllerListener?.();
     this.cleanup();
     window.removeEventListener('shell:show-demo-login', this.handleShowDemoLogin);
   }
@@ -805,6 +956,7 @@ export class ShellContainer extends LitElement {
   }
 
   private handleBackToScenarios(): void {
+    this.showDemoShowcase = true;
     this.demoController.deactivateScenario();
     void this.fetchAndApplyApps();
   }
@@ -819,6 +971,7 @@ export class ShellContainer extends LitElement {
   private async handleLaunchScenario(event: CustomEvent<{ scenarioId: string }>): Promise<void> {
     const scenario = getScenario(event.detail.scenarioId);
     if (!scenario || !scenario.roles.length) return;
+    this.showDemoShowcase = true;
     this.demoController.activateScenario(event.detail.scenarioId);
     this.demoController.setOriginalUser(this.user);
     this.apps = scenario.apps;
@@ -833,8 +986,38 @@ export class ShellContainer extends LitElement {
     });
   }
 
-  private handleStartWalkthrough(): void {
+  private async handleStartWalkthrough(): Promise<void> {
     this.demoController.startWalkthrough();
+    const scenario = this.demoController.getActiveScenario();
+    if (scenario) {
+      const stepData = scenario.walkthrough[0];
+      if (stepData?.userId) {
+        await this.switchToWalkthroughUser(stepData);
+      }
+    }
+  }
+
+  private async openManifestFromWalkthrough(manifestId: string): Promise<void> {
+    const manifest = this.apps.find((a) => a.id === manifestId);
+    if (!manifest) return;
+    this.showDemoShowcase = false;
+    const path = new URL(manifest.url, window.location.origin).pathname;
+    await this.handleNavigation(path);
+  }
+
+  private async switchToWalkthroughUser(stepData: { userId?: string; navigateTo?: string }): Promise<void> {
+    if (stepData.userId) {
+      await this.authService?.switchUser(stepData.userId);
+      this.user = this.authService?.getUser() || null;
+      this.activeAppId = '';
+      this.iframeManager?.destroy();
+    }
+    if (stepData.navigateTo && this.user) {
+      const manifest = this.apps.find(a => a.id === stepData.navigateTo);
+      if (manifest && this.authService?.hasAnyPermission(manifest.permissions)) {
+        await this.openManifestFromWalkthrough(manifest.id);
+      }
+    }
   }
 
   private async handleWalkthroughNext(): Promise<void> {
@@ -842,11 +1025,8 @@ export class ShellContainer extends LitElement {
     const scenario = this.demoController.getActiveScenario();
     if (scenario) {
       const stepData = scenario.walkthrough[step];
-      if (stepData?.userId) {
-        await this.authService?.switchUser(stepData.userId);
-        this.user = this.authService?.getUser() || null;
-        this.activeAppId = '';
-        this.iframeManager?.destroy();
+      if (stepData) {
+        await this.switchToWalkthroughUser(stepData);
       }
     }
   }
@@ -856,17 +1036,72 @@ export class ShellContainer extends LitElement {
     const scenario = this.demoController.getActiveScenario();
     if (scenario) {
       const stepData = scenario.walkthrough[step];
-      if (stepData?.userId) {
-        await this.authService?.switchUser(stepData.userId);
-        this.user = this.authService?.getUser() || null;
-        this.activeAppId = '';
-        this.iframeManager?.destroy();
+      if (stepData) {
+        await this.switchToWalkthroughUser(stepData);
       }
     }
   }
 
   private handleExitWalkthrough(): void {
     this.demoController.exitWalkthrough();
+    this.showDemoShowcase = true;
+  }
+
+  private handleWalkthroughComplete(): void {
+    this.demoController.exitWalkthrough();
+    this.demoController.deactivateScenario();
+    this.showDemoShowcase = true;
+    void this.fetchAndApplyApps();
+  }
+
+  private renderWalkthroughOverlay(): ReturnType<typeof html> | null {
+    const step = this.demoController.getCurrentStep();
+    if (!this.demoController.isWalkthroughActive() || !step) {
+      return null;
+    }
+
+    const progress = this.demoController.getWalkthroughProgress();
+    const isLast = progress.current >= progress.total;
+    const isFirst = progress.current <= 1;
+    const hasRoleSwitch = step.userId !== undefined;
+
+    return html`
+      <div class="walkthrough-overlay" @click="${this.handleExitWalkthrough}">
+        <div class="walkthrough-panel" @click="${(e: Event) => e.stopPropagation()}">
+          <div class="wt-header">
+            <span class="wt-progress">Step ${progress.current} of ${progress.total}</span>
+            <button class="wt-close" @click="${this.handleExitWalkthrough}">✕</button>
+          </div>
+
+          ${isLast
+            ? html`
+                <div class="wt-complete">
+                  <h3>Walkthrough Complete</h3>
+                  <p>You've seen how Shell Platform handles ${this.demoController.getActiveScenario()?.compliance[0] || 'compliance'} requirements. Want to try another scenario?</p>
+                  <button class="wt-btn primary" @click="${this.handleWalkthroughComplete}">
+                    Back to Scenarios
+                  </button>
+                </div>
+              `
+            : html`
+                <h2 class="wt-title">${step.title}</h2>
+                <p class="wt-narrative">${step.narrative}</p>
+                <div class="wt-observe">
+                  <strong>Observe</strong>
+                  ${step.observe}
+                </div>
+                <div class="wt-actions">
+                  <button class="wt-btn" @click="${this.handleWalkthroughPrev}" ?disabled="${isFirst}">
+                    ← Previous
+                  </button>
+                  <button class="wt-btn primary" @click="${this.handleWalkthroughNext}">
+                    ${isFirst && hasRoleSwitch ? '▶ Start' : hasRoleSwitch ? 'Switch Role & Continue' : 'Next →'}
+                  </button>
+                </div>
+              `}
+        </div>
+      </div>
+    `;
   }
 
   private handleDemoShowcaseSwitchUser(event: CustomEvent<{ userId: string }>): void {
@@ -1218,7 +1453,7 @@ export class ShellContainer extends LitElement {
                       .scenarios="${this.demoController.getAllScenarios()}"
                       .activeScenario="${this.demoController.getActiveScenario()}"
                       .currentStep="${this.demoController.getCurrentStep()}"
-                      .walkthroughActive="${this.demoController.isWalkthroughActive()}"
+                      .walkthroughActive="${false}"
                       .walkthroughCurrent="${this.demoController.getWalkthroughProgress().current}"
                       .walkthroughTotal="${this.demoController.getWalkthroughProgress().total}"
                       .currentUserId="${this.user?.id || ''}"
@@ -1313,6 +1548,8 @@ export class ShellContainer extends LitElement {
             </div>
           `
         : null}
+
+      ${this.renderWalkthroughOverlay()}
     `;
   }
 }

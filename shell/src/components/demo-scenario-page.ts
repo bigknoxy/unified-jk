@@ -570,6 +570,8 @@ export class DemoScenarioPage extends LitElement {
   private renderWalkthroughOverlay() {
     const step = this.currentStep!;
     const isLast = this.walkthroughCurrent >= this.walkthroughTotal;
+    const isFirst = this.walkthroughCurrent === 1;
+    const hasRoleSwitch = step.userId !== undefined;
 
     return html`
       <div class="walkthrough-overlay" @click="${this.handleExitWalkthrough}">
@@ -601,7 +603,7 @@ export class DemoScenarioPage extends LitElement {
                     ← Previous
                   </button>
                   <button class="wt-btn primary" @click="${this.handleNextStep}">
-                    ${step.userId ? 'Switch Role & Continue' : 'Next →'}
+                    ${isFirst && hasRoleSwitch ? '▶ Start' : hasRoleSwitch ? 'Switch Role & Continue' : 'Next →'}
                   </button>
                 </div>
               `}

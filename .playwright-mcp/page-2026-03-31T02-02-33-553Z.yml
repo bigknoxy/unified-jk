@@ -1,0 +1,58 @@
+- generic [ref=e4]:
+  - banner [ref=e6]:
+    - heading "App Shell" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - button "Close App Admin" [ref=e51] [cursor=pointer]
+      - button "A( Alice (Admin)" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: A(
+        - generic [ref=e14]: Alice (Admin)
+        - img [ref=e15]
+  - generic [ref=e17]:
+    - navigation [ref=e19]:
+      - button [ref=e20] [cursor=pointer]:
+        - img [ref=e21]
+      - link "Sample App" [ref=e23] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e24]
+        - generic [ref=e29]: Sample App
+      - link "Audit Dashboard" [ref=e86] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e87]
+        - generic [ref=e36]: Audit Dashboard
+    - generic [ref=e41]:
+      - generic [ref=e53]:
+        - generic [ref=e55]:
+          - paragraph [ref=e56]: App Manifest Admin
+          - paragraph [ref=e57]: Edit app URL and metadata, or enable and disable apps live.
+        - generic [ref=e58]:
+          - article [ref=e59]:
+            - generic [ref=e60]:
+              - generic [ref=e61]:
+                - generic [ref=e62]: Sample App
+                - generic [ref=e63]: sample-app • http://localhost:8886/index.html
+              - generic [ref=e64]:
+                - generic [ref=e65]: Enabled
+                - button "Disable" [ref=e66] [cursor=pointer]
+                - button "Edit" [ref=e67] [cursor=pointer]
+          - article [ref=e68]:
+            - generic [ref=e69]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: API Explorer
+                - generic [ref=e72]: api-explorer • http://localhost:8886/api-explorer.html
+              - generic [ref=e73]:
+                - generic [ref=e74]: Disabled
+                - button "Enable" [ref=e89] [cursor=pointer]
+                - button "Edit" [ref=e76] [cursor=pointer]
+          - article [ref=e77]:
+            - generic [ref=e78]:
+              - generic [ref=e79]:
+                - generic [ref=e80]: Audit Dashboard
+                - generic [ref=e81]: dashboard • http://localhost:8889/index.html
+              - generic [ref=e82]:
+                - generic [ref=e83]: Enabled
+                - button "Disable" [ref=e84] [cursor=pointer]
+                - button "Edit" [ref=e85] [cursor=pointer]
+      - generic [ref=e43]:
+        - img [ref=e44]
+        - heading "Select an app to get started" [level=2] [ref=e49]
+        - paragraph [ref=e50]: Choose an application from the sidebar to begin working.

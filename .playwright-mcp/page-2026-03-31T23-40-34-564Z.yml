@@ -1,0 +1,23 @@
+- generic [ref=e4]:
+  - banner [ref=e6]:
+    - heading "App Shell" [level=1] [ref=e8]
+    - button "B( Bob (Standard User)" [ref=e57] [cursor=pointer]:
+      - generic [ref=e58]: B(
+      - generic [ref=e59]: Bob (Standard User)
+      - img [ref=e60]
+  - generic [ref=e11]:
+    - navigation [ref=e63]:
+      - button [ref=e64] [cursor=pointer]:
+        - img [ref=e65]
+      - link "Sample App" [ref=e67] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e68]
+        - generic [ref=e73]: Sample App
+      - link "API Explorer" [ref=e74] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e75]
+        - generic [ref=e80]: API Explorer
+    - generic [ref=e14]:
+      - img [ref=e15]
+      - heading "Select an app to get started" [level=2] [ref=e20]
+      - paragraph [ref=e21]: Choose an application from the sidebar to begin working.

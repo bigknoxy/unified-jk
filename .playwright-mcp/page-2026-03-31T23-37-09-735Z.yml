@@ -1,0 +1,61 @@
+- generic [ref=e4]:
+  - banner [ref=e6]:
+    - heading "App Shell" [level=1] [ref=e8]
+    - button "A( Alice (Admin)" [ref=e57] [cursor=pointer]:
+      - generic [ref=e58]: A(
+      - generic [ref=e59]: Alice (Admin)
+      - img [ref=e60]
+  - generic [ref=e11]:
+    - navigation [ref=e63]:
+      - button [ref=e64] [cursor=pointer]:
+        - img [ref=e65]
+      - link "Sample App" [ref=e67] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e68]
+        - generic [ref=e73]: Sample App
+      - link "API Explorer" [ref=e74] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e75]
+        - generic [ref=e80]: API Explorer
+      - link "Audit Dashboard" [ref=e81] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e82]
+        - generic [ref=e84]: Audit Dashboard
+      - link "App Manager" [ref=e85] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e86]
+        - generic [ref=e89]: App Manager
+      - link "User Manager" [ref=e90] [cursor=pointer]:
+        - /url: javascript:void(0)
+        - img [ref=e91]
+        - generic [ref=e96]: User Manager
+    - iframe [ref=e97]:
+      - generic [ref=f17e2]:
+        - heading "API Explorer" [level=1] [ref=f17e3]:
+          - img [ref=f17e4]
+          - text: API Explorer
+        - paragraph [ref=f17e6]: Developer tools for API exploration and testing
+        - generic [ref=f17e7]:
+          - generic [ref=f17e9]: AUTHENTICATED
+          - generic [ref=f17e10]:
+            - generic [ref=f17e11]: A(
+            - generic [ref=f17e12]:
+              - heading "Alice (Admin)" [level=3] [ref=f17e13]
+              - paragraph [ref=f17e14]: alice@example.com
+        - generic [ref=f17e15]:
+          - heading "Available Endpoints" [level=2] [ref=f17e16]
+          - generic [ref=f17e17]:
+            - generic [ref=f17e18]: GET
+            - generic [ref=f17e19]: /api/manifests
+            - button "Test" [ref=f17e20] [cursor=pointer]
+          - generic [ref=f17e21]:
+            - generic [ref=f17e22]: GET
+            - generic [ref=f17e23]: /api/audit/events
+            - button "Test" [ref=f17e24] [cursor=pointer]
+          - generic [ref=f17e25]:
+            - generic [ref=f17e26]: POST
+            - generic [ref=f17e27]: /api/audit/events
+            - button "Test" [ref=f17e28] [cursor=pointer]
+        - generic [ref=f17e29]:
+          - heading "SDK Information" [level=2] [ref=f17e30]
+          - generic [ref=f17e31]: "App ID: api-explorer Shell Origin: auto-detected User: Alice (Admin)"

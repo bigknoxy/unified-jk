@@ -17,6 +17,7 @@ export interface WalkthroughStep {
   narrative: string;
   observe: string;
   userId?: string;
+  navigateTo?: string;
 }
 
 export interface DemoScenario {
@@ -201,31 +202,32 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     apps: HEALTHCARE_APPS,
     walkthrough: [
       {
-        title: 'Start as Dr. Smith (Physician)',
+        title: 'Start as Physician',
         narrative: 'You are a physician logging into the Electronic Health Records system.',
-        observe: 'Notice the sidebar shows Patient Records, Billing System, and Compliance Monitor — exactly the apps a doctor needs.',
+        observe: 'The sidebar shows Patient Records and Billing System — the clinical apps you need. Compliance Monitor and System Admin are hidden because you lack those permissions.',
         userId: 'bob-user'
       },
       {
         title: 'Switch to Billing Specialist',
         narrative: 'Now switch to the billing role. This person handles insurance claims, not patient care.',
-        observe: 'The sidebar shrinks dramatically. Billing can only read documents — no clinical apps, no admin tools. This is HIPAA minimum-necessary access.',
+        observe: 'The sidebar is empty. Billing specialists can only read documents — they cannot access any apps directly. This is HIPAA minimum-necessary access in action.',
         userId: 'carol-viewer'
       },
       {
         title: 'Switch to System Admin',
         narrative: 'The IT administrator has full access to manage the entire platform.',
-        observe: 'All four apps appear. Admin can manage applications, view audit logs, and configure the system. Every action they take is logged.',
+        observe: 'All four apps appear: Patient Records, Billing System, Compliance Monitor, and System Admin. Every action the admin takes is logged.',
         userId: 'alice-admin'
       },
       {
-        title: 'Check the Audit Trail',
+        title: 'Review the Audit Trail',
         narrative: 'Open the Compliance Monitor to see the audit trail of all role switches and app accesses.',
         observe: 'Every role switch, login, and app access is recorded with timestamp, user, and action. This is your HIPAA audit trail.',
-        userId: 'alice-admin'
+        userId: 'alice-admin',
+        navigateTo: 'dashboard'
       },
       {
-        title: 'Complete',
+        title: 'Walkthrough Complete',
         narrative: 'You have seen how Shell Platform enforces HIPAA minimum-necessary access through role-based permissions.',
         observe: 'Each role sees only the apps they need. Every action is audited. The system is secure by default.'
       }
@@ -249,29 +251,30 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
       {
         title: 'Start as Trader',
         narrative: 'You are a trader on the trading desk. You need fast access to the trading platform.',
-        observe: 'The sidebar shows Trading Desk, Risk Analytics, and SOX Compliance — everything a trader needs.',
+        observe: 'The sidebar shows Trading Desk and Risk Analytics. SOX Compliance and System Admin are hidden.',
         userId: 'bob-user'
       },
       {
         title: 'Switch to Risk Analyst',
         narrative: 'Now see what the risk team sees. They analyze but do not execute trades.',
-        observe: 'The Risk Analyst has read-only access. They can view documents but cannot access the trading desk directly.',
+        observe: 'The sidebar is empty. Risk Analysts can only read documents — they cannot access trading apps directly. This is separation of duties.',
         userId: 'carol-viewer'
       },
       {
         title: 'Switch to Compliance Officer',
         narrative: 'The compliance officer has oversight of the entire operation.',
-        observe: 'Full access to all systems. Every trade, every risk analysis, every system change is visible in the audit trail.',
+        observe: 'All four apps appear: Trading Desk, Risk Analytics, SOX Compliance, and System Admin. Every trade and system change is visible.',
         userId: 'alice-admin'
       },
       {
         title: 'Review the Audit Trail',
         narrative: 'Open SOX Compliance to see the complete audit trail.',
         observe: 'Every trade, every role switch, every system access is logged with full attribution. This is your SOX compliance evidence.',
-        userId: 'alice-admin'
+        userId: 'alice-admin',
+        navigateTo: 'dashboard'
       },
       {
-        title: 'Complete',
+        title: 'Walkthrough Complete',
         narrative: 'You have seen how Shell Platform enforces separation of duties for SOX compliance.',
         observe: 'Traders trade, analysts analyze, compliance oversees. No single role can bypass controls.'
       }
@@ -296,29 +299,30 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
       {
         title: 'Start as Analyst',
         narrative: 'You are an intelligence analyst with unclassified clearance.',
-        observe: 'The sidebar shows Intelligence Dashboard, Case Management, and Audit Trail — all within your clearance level.',
+        observe: 'The sidebar shows Intelligence Dashboard and Case Management. Audit Trail and System Admin are hidden.',
         userId: 'bob-user'
       },
       {
         title: 'Switch to Auditor',
         narrative: 'The auditor has a very narrow scope: audit access only.',
-        observe: 'Only the Audit Trail is visible. The auditor cannot access any operational systems. This is need-to-know enforcement.',
+        observe: 'The sidebar is empty. Auditors can only read documents — they cannot access any operational systems. This is need-to-know enforcement.',
         userId: 'carol-viewer'
       },
       {
         title: 'Switch to Security Officer',
         narrative: 'The security officer has full oversight of the entire platform.',
-        observe: 'All applications are visible. The security officer can manage access controls, review audit trails, and configure the system.',
+        observe: 'All four apps appear: Intelligence Dashboard, Case Management, Audit Trail, and System Admin.',
         userId: 'alice-admin'
       },
       {
         title: 'Review the Audit Trail',
         narrative: 'Open the Audit Trail to see the complete access log.',
         observe: 'Every login, every app access, every role switch is recorded. This is your FedRAMP continuous monitoring evidence.',
-        userId: 'alice-admin'
+        userId: 'alice-admin',
+        navigateTo: 'dashboard'
       },
       {
-        title: 'Complete',
+        title: 'Walkthrough Complete',
         narrative: 'You have seen how Shell Platform enforces need-to-know access for government systems.',
         observe: 'Each role sees only what their clearance permits. Every action is audited. The system meets FedRAMP requirements.'
       }

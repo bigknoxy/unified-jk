@@ -1,0 +1,38 @@
+- generic [active] [ref=e3]:
+  - generic [ref=e7]:
+    - banner [ref=e9]:
+      - heading "App Shell" [level=1] [ref=e11]
+      - button "Sign in" [ref=e13] [cursor=pointer]
+    - generic [ref=e17]:
+      - img [ref=e18]
+      - heading "Select an app to get started" [level=2] [ref=e23]
+      - paragraph [ref=e24]: Choose an application from the sidebar to begin working.
+  - generic [ref=e26]:
+    - generic [ref=e27]: Demo Mode
+    - heading "Select a Demo User" [level=2] [ref=e28]
+    - paragraph [ref=e29]: Choose a user to see different permission levels in action.
+    - generic [ref=e30]:
+      - generic [ref=e31] [cursor=pointer]:
+        - generic [ref=e32]: A(
+        - generic [ref=e33]:
+          - generic [ref=e34]: Alice (Admin)
+          - generic [ref=e35]: alice@example.com
+          - generic [ref=e37]: admin
+      - generic [ref=e38] [cursor=pointer]:
+        - generic [ref=e39]: B(
+        - generic [ref=e40]:
+          - generic [ref=e41]: Bob (Standard User)
+          - generic [ref=e42]: bob@example.com
+          - generic [ref=e44]: user
+      - generic [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: C(
+        - generic [ref=e47]:
+          - generic [ref=e48]: Carol (Viewer)
+          - generic [ref=e49]: carol@example.com
+          - generic [ref=e51]: viewer
+      - generic [ref=e52] [cursor=pointer]:
+        - generic [ref=e53]: D(
+        - generic [ref=e54]:
+          - generic [ref=e55]: Dave (Developer)
+          - generic [ref=e56]: dave@example.com
+          - generic [ref=e58]: developer

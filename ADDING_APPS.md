@@ -165,9 +165,36 @@ const demoManifests: AppManifest[] = [
     permissions: ['app:read'], // Required permissions to access this app
     category: 'Your Category',
     order: 10, // Order in navigation menu
-    version: '1.0.0'
+    version: '1.0.0',
+    enabled: true,
+    settings: {
+      owner: 'team-name'
+    }
   }
 ];
+```
+
+`enabled` controls whether the app appears in shell navigation. Disabled apps are hidden from regular users.
+
+`settings` is optional metadata for app-specific configuration and can be edited by platform admins.
+
+### Admin Updates to Existing Manifests
+
+Platform admins can update existing manifests at runtime using the registry API:
+
+```bash
+curl -X PATCH http://localhost:8081/api/manifests/my-new-app \
+  -H "origin: http://localhost:8888" \
+  -H "x-user-permissions: admin:write" \
+  -H "content-type: application/json" \
+  -d '{"enabled": false, "settings": {"owner": "platform-team"}}'
+```
+
+To list disabled apps as an admin:
+
+```bash
+curl "http://localhost:8081/api/manifests?includeDisabled=true" \
+  -H "x-user-permissions: admin:read"
 ```
 
 ### 6. Deploy Your App

@@ -1,0 +1,8 @@
+- generic [ref=e7]:
+  - banner [ref=e9]:
+    - heading "App Shell" [level=1] [ref=e11]
+    - button "Sign in" [ref=e13] [cursor=pointer]
+  - generic [ref=e17]:
+    - img [ref=e18]
+    - heading "Select an app to get started" [level=2] [ref=e23]
+    - paragraph [ref=e24]: Choose an application from the sidebar to begin working.

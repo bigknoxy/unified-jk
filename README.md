@@ -84,6 +84,7 @@ This starts:
 - **Shell** on http://localhost:8888
 - **SDK CDN** on http://localhost:8887
 - **Sample App** on http://localhost:8886
+- **Audit Dashboard App** on http://localhost:8889
 - **Audit Service** on http://localhost:8080
 - **Manifest Registry** on http://localhost:8081
 
@@ -103,10 +104,13 @@ cd sdk && python3 -m http.server 8887
 # Terminal 3: Sample App (port 8886)
 cd sample-app && python3 -m http.server 8886
 
-# Terminal 4: Audit Service (port 8080)
+# Terminal 4: Audit Dashboard App (port 8889)
+cd dashboard-app && python3 -m http.server 8889
+
+# Terminal 5: Audit Service (port 8080)
 cd audit-service && npm install && npm run dev
 
-# Terminal 5: Manifest Registry (port 8081)
+# Terminal 6: Manifest Registry (port 8081)
 cd manifest-registry && npm install && npm run dev
 ```
 
@@ -214,9 +218,22 @@ const config: ShellConfig = {
   "name": "My Application",
   "url": "https://apps.company.com/my-app",
   "permissions": ["app:read", "app:write"],
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "enabled": true,
+  "settings": {
+    "owner": "team-name"
+  }
 }
 ```
+
+### Manifest Admin API (Registry)
+
+- `GET /api/manifests` - public read
+- `GET /api/manifests?includeDisabled=true` - requires `x-user-permissions: admin:read` (or `admin:write`)
+- `PATCH /api/manifests/:id` - requires shell origin and `x-user-permissions: admin:write`
+
+Patch payload supports partial updates for:
+- `name`, `description`, `url`, `icon`, `category`, `version`, `enabled`, `settings`
 
 ## Next Steps
 

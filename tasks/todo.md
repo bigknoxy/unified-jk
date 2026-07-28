@@ -1,58 +1,70 @@
-# Shell Handshake Bug Fix
+# Demo Readiness - Audit + Admin Controls
 
 ## Checklist
 - [x] Restate goal and acceptance criteria
-- [x] Inspect `sdk/shell-client.js` handshake path for root cause
-- [x] Implement minimal fix for `this._handleShellInit is not a function`
-- [x] Harden `_waitForShellInit` only if tiny and safe
-- [x] Run focused verification checks
-- [x] Record results and resolution status
-- [x] Extend this plan with iframe-load and ACK-timeout requirements
-- [x] Remove stale ACK-on-ACK timeout paths in SDK/shell messaging
-- [x] Fix shell `sendNack` target-origin handling
-- [x] Reduce noisy false ACK timeout behavior while keeping minimal architecture changes
-- [x] Add SDK cache-busting update for sample app and API explorer
-- [x] Verify in-browser flow: login as Dave, open Sample App and API Explorer in shell iframe, interact in both
-- [x] Collect console evidence and confirm no `_handleShellInit is not a function`, `Timeout waiting for SHELL_INIT`, `Message ACK timeout`, or uncaught shell-client promise errors
-- [x] Run targeted verification commands and capture outcomes
+- [x] Investigate and fix: admin cannot see Audit Dashboard
+- [x] Investigate and fix: Sample App and API Explorer render as same app
+- [x] Add manifest admin capabilities (update URL/settings, enable/disable app)
+- [x] Add/adjust backend validation + authorization for admin manifest writes
+- [x] Add/adjust shell + app UX for manifest admin workflow
+- [x] Polish UI for professional auditor-facing demo quality
+- [x] Run code simplification pass on changed areas
+- [x] Run QA pass and fix issues found
+- [x] Verify full end-to-end flows and capture evidence
+- [x] Update docs for new admin workflow
+
+## Finalization Pass (Requested)
+- [x] Restate expanded goal + verification bar (full QA + browse + review + regressions)
+- [x] Start all services and keep them running
+- [x] Execute full /browse validation across key user workflows
+- [x] Execute full /qa pass and collect defects
+- [x] Perform code review on current diff and apply fixes
+- [x] Define top 5 critical user workflows and add automated tests
+- [x] Run full regression suite (tests + builds + lint where available)
+- [x] Re-run /qa regression after fixes
+- [x] Final sanity check that all services remain running
 
 ## Acceptance Criteria
-- Browser message handler no longer calls instance methods through incorrect `this` context.
-- `SHELL_INIT` handling completes reliably without false timeout when init payload user is null/empty.
-- Changes are limited to minimal required files.
-- Verification commands and outcomes are captured below.
-- Shell can open both Sample App and API Explorer with correct content inside the shell iframe.
-- No repeated SDK ACK-timeout noise appears during the required login + app-switch + interaction flow.
+- Admin user can see and open Audit Dashboard in shell navigation.
+- Sample App and API Explorer are clearly distinct apps with distinct content and behavior.
+- Admin can edit manifest URL/settings and can enable/disable apps through supported API + UI.
+- Non-admin cannot perform manifest write operations.
+- Audit dashboard and related surfaces look polished and demo-ready on desktop + mobile.
+- Full happy-path demo flow is verified: login as admin, manage manifests, open both apps, view audit data.
 
 ## Working Notes
-- Reported errors: `Uncaught TypeError this._handleShellInit is not a function` then `Timeout waiting for SHELL_INIT`.
-- Root cause confirmed: message event listener uses `function` callback but switch dispatch called instance methods via `this` instead of captured `self`.
-- Fragility confirmed: `_waitForShellInit` used `this.user !== null` as init completion signal, which fails for valid unauthenticated/null user init payloads.
+- Prior issue likely involved permission/header mismatch in manifest fetch filtering.
+- API Explorer manifest currently points to sample index fallback route, likely causing same-app appearance.
+- Manifest model currently lacks an enabled/disabled field.
+- Top 5 workflows chosen for automation should cover permission gating, manifest writes, workflow correlation, dashboard filtering UX, and navigation integrity.
+- Defect found during QA: shell nav did not live-refresh after App Manager enable/disable; fixed by propagating `manifests:version` shared-state signal and refreshing manifests in shell.
 
 ## Results
-- Files changed: `sdk/shell-client.js`, `tasks/todo.md`.
-- Verification commands run:
-  - `node --check sdk/shell-client.js` (pass)
-  - `npm run --silent lint` in `shell/` (failed: no ESLint config file found)
-  - `npm run --silent test -- --run` in `shell/` (no test files; exits 1)
-- Resolution status: expected to resolve reported handshake failure by fixing handler context and waiting on explicit shell-init receipt rather than user-null heuristics.
-- Additional files changed: `shell/src/services/message-handler.ts`, `sample-app/public/index.html`, `sample-app/public/api-explorer.html`.
-- Additional handshake fixes:
-  - Removed SDK ACK-on-ACK path for incoming `SHELL_INIT` to prevent stale ACK chatter.
-  - Fixed `sendNack` to use computed `targetOrigin` (`*` for sandboxed null origin) instead of raw origin.
-  - Increased SDK ACK timeout window from 500ms to 2000ms and hardened pending ACK cleanup to avoid false timeout/retry noise.
-  - Bumped SDK script cache-busting query in both Sample App and API Explorer to `v=10`.
-- Browser flow verification (gstack browse, `http://localhost:8888`):
-  - Cleared session storage, clicked Sign in, selected Dave (Developer).
-  - Opened Sample App from shell nav; iframe context confirmed at `http://localhost:8886/index.html`.
-  - In Sample App, executed shared-state interaction and saw `✅ Saved: "verifyKey" = "verifyValue"`.
-  - Opened API Explorer from shell nav; iframe context confirmed at `http://localhost:8886/api-explorer.html`.
-  - In API Explorer, executed endpoint test and saw manifest JSON response with `sample-app` and `api-explorer` entries.
-  - Confirmed shell iframe state after flow: `app-api-explorer` visible, `app-sample-app` hidden, both with expected src URLs.
-- Console evidence for required error checks:
-  - No occurrences of `_handleShellInit is not a function`.
-  - No occurrences of `Timeout waiting for SHELL_INIT`.
-  - No occurrences of `Message ACK timeout`.
-  - No uncaught promise errors from shell-client during the verified flow.
-- Additional targeted verification commands run:
-  - `npm run --silent build` in `shell/` (failed due to pre-existing TypeScript issues unrelated to these edits).
+- Implemented manifest admin model + APIs (`enabled`, `settings`, partial `PATCH`) and enforced `admin:write` for manifest writes.
+- Fixed app identity bug by pointing `api-explorer` to `sample-app/public/api-explorer.html`.
+- Fixed admin dashboard visibility by refreshing manifests after auth/session changes and supporting admin `includeDisabled` fetch.
+- Added admin UI in shell for live manifest editing + enable/disable and navigation filtering of disabled apps.
+- Upgraded dashboard app UI and data rendering for demo polish and verified responsive behavior.
+- Verified E2E flow with Playwright: admin login, manage apps, enable/disable, open Sample App, open API Explorer, open Audit Dashboard with event table data.
+- Updated docs in `README.md` and `ADDING_APPS.md` for dashboard app startup, manifest schema, and admin registry endpoints.
+- Added shell/app sync for manifest updates via `ShellClient.setState('manifests:version')` in admin manager and shared-state refresh handler in shell container.
+- Added automated auth middleware tests in manifest registry to cover includeDisabled/read and write authorization paths.
+
+## Demo Walkthrough Stabilization (In Progress)
+- [x] Repro and isolate walkthrough mismatch and click-through failures
+- [x] Fix walkthrough progression and app navigation alignment
+- [x] Add focused regression tests for walkthrough state transitions
+- [x] Run shell test/build/lint verification
+- [x] Run end-to-end walkthrough validation in browser automation
+
+### Working Notes (Demo Walkthrough)
+- Root cause candidate: walkthrough step with `navigateTo` sets `activeAppId` but never mounts iframe, so user can land on blank content.
+- UX mismatch candidate: walkthrough overlay currently lives only inside the demo page, so navigating away drops the guidance and breaks flow continuity.
+
+### Results (Demo Walkthrough)
+- Root cause confirmed: walkthrough step advanced internally but shell component was not subscribed to demo-controller state changes, so overlay stalled on Step 4.
+- Root cause confirmed: `navigateTo` only set `activeAppId` and never called iframe mount path, causing blank/non-loading behavior.
+- Fixed walkthrough by rendering overlay at shell-container level and wiring navigation through shared `handleNavigation` flow.
+- Added completion behavior to return users to scenario picker, reset scenario state, and refresh app manifests.
+- Added unit tests for demo-controller walkthrough progression and listener notifications.
+- Verified flow end-to-end with Playwright script: Scenario launch -> Steps 1-5 -> dashboard iframe mounted -> back to scenarios.
