@@ -19,5 +19,8 @@
     "shell",
     "audit-service",
     "manifest-registry"
-  ]
+  ],
+  "overrides": {
+    "esbuild": "0.28.2"
+  }
 }
